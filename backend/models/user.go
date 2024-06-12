@@ -7,9 +7,9 @@ import (
 // User represents a User schema
 type User struct {
 	Base
-	Email    string `json:"email" gorm:"unique"`
-	Username string `json:"username" gorm:"unique"`
-	Password string `json:"password"`
+	Phone   string `json:"phone"`
+	Email   string `json:"email"`
+	Username string `json:"username"`
 }
 
 // UserErrors represent the error format for user routes

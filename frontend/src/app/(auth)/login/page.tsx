@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 
+
 const centerStyle = {
   display: "flex",
   flexDirection: "column",
@@ -16,19 +17,41 @@ const headerStyle = {
   marginBottom: "20px",
 };
 
+const greenText = {
+  color: "#25D366", // WhatsApp green color
+};
+
 export default function Login() {
   return (
     <div style={centerStyle}>
       <header style={headerStyle}>
-        {/* Login with email, looking pretty with a nice font and email icon */}
-        Login with email  📧
+        Login with <span style={greenText}>WhatsApp</span>
       </header>
 
       <Input
-        type="email"
-        placeholder="email"
+        type="tel"
+        placeholder="+11234567890"
         style={{ marginBottom: "10px" }}
       />
+
+      {/* Add small subtitle text that says "Make sure to include the country code" */}
+      <small style={{ marginBottom: "20px", color: "gray", fontSize: "12px" }}>
+        Make sure to include the country code
+      </small>
+
+      <button
+        style={{
+          backgroundColor: greenText.color,
+          color: "white",
+          padding: "10px",
+          width: "100%",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        Login
+      </button>
+
     </div>
   );
 }

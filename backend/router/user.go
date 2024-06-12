@@ -4,10 +4,10 @@ import (
 	db "go-authentication-boilerplate/database"
 	"go-authentication-boilerplate/models"
 	"go-authentication-boilerplate/util"
-	"math/rand"
+	// "math/rand"
 	"time"
-
-	"golang.org/x/crypto/bcrypt"
+	"log"
+	// "golang.org/x/crypto/bcrypt"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
@@ -17,8 +17,9 @@ var jwtKey = []byte(db.PRIVKEY)
 
 // SetupUserRoutes func sets up all the user routes
 func SetupUserRoutes() {
-	USER.Post("/signup", CreateUser)              // Sign Up a user
-	USER.Post("/signin", LoginUser)               // Sign In a user
+	// USER.Post("/signup", CreateUser)              // Sign Up a user
+	// USER.Post("/signin", LoginUser)               // Sign In a user
+	USER.Post("/whatsapp-login", HandleWhatsAppLogin) // Sign In a user using WhatsApp
 	USER.Get("/get-access-token", GetAccessToken) // returns a new access_token
 
 	// privUser handles all the private user routes that requires authentication
@@ -29,99 +30,143 @@ func SetupUserRoutes() {
 }
 
 // CreateUser route registers a User into the database
-func CreateUser(c *fiber.Ctx) error {
-	u := new(models.User)
 
-	if err := c.BodyParser(u); err != nil {
-		return c.JSON(fiber.Map{
-			"error": true,
-			"input": "Please review your input",
-		})
-	}
+// func CreateUser(c *fiber.Ctx) error {
+// 	u := new(models.User)
 
-	// validate if the email, username and password are in correct format
-	errors := util.ValidateRegister(u)
-	if errors.Err {
-		return c.JSON(errors)
-	}
+// 	if err := c.BodyParser(u); err != nil {
+// 		return c.JSON(fiber.Map{
+// 			"error": true,
+// 			"input": "Please review your input",
+// 		})
+// 	}
 
-	if count := db.DB.Where(&models.User{Email: u.Email}).First(new(models.User)).RowsAffected; count > 0 {
-		errors.Err, errors.Email = true, "Email is already registered"
-	}
-	if count := db.DB.Where(&models.User{Username: u.Username}).First(new(models.User)).RowsAffected; count > 0 {
-		errors.Err, errors.Username = true, "Username is already registered"
-	}
-	if errors.Err {
-		return c.JSON(errors)
-	}
+// 	// validate if the email, username and password are in correct format
+// 	errors := util.ValidateRegister(u)
+// 	if errors.Err {
+// 		return c.JSON(errors)
+// 	}
 
-	// Hashing the password with a random salt
-	password := []byte(u.Password)
-	hashedPassword, err := bcrypt.GenerateFromPassword(
-		password,
-		rand.Intn(bcrypt.MaxCost-bcrypt.MinCost)+bcrypt.MinCost,
-	)
+// 	if count := db.DB.Where(&models.User{Email: u.Email}).First(new(models.User)).RowsAffected; count > 0 {
+// 		errors.Err, errors.Email = true, "Email is already registered"
+// 	}
+// 	if count := db.DB.Where(&models.User{Username: u.Username}).First(new(models.User)).RowsAffected; count > 0 {
+// 		errors.Err, errors.Username = true, "Username is already registered"
+// 	}
+// 	if errors.Err {
+// 		return c.JSON(errors)
+// 	}
 
-	if err != nil {
-		panic(err)
-	}
-	u.Password = string(hashedPassword)
+// 	// Hashing the password with a random salt
+// 	password := []byte(u.Password)
+// 	hashedPassword, err := bcrypt.GenerateFromPassword(
+// 		password,
+// 		rand.Intn(bcrypt.MaxCost-bcrypt.MinCost)+bcrypt.MinCost,
+// 	)
 
-	if err := db.DB.Create(&u).Error; err != nil {
-		return c.JSON(fiber.Map{
-			"error":   true,
-			"general": "Something went wrong, please try again later. 😕",
-		})
-	}
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	u.Password = string(hashedPassword)
 
-	// setting up the authorization cookies
-	accessToken, refreshToken := util.GenerateTokens(u.UUID.String())
-	accessCookie, refreshCookie := util.GetAuthCookies(accessToken, refreshToken)
-	c.Cookie(accessCookie)
-	c.Cookie(refreshCookie)
+// 	if err := db.DB.Create(&u).Error; err != nil {
+// 		return c.JSON(fiber.Map{
+// 			"error":   true,
+// 			"general": "Something went wrong, please try again later. 😕",
+// 		})
+// 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-	})
-}
+// 	// setting up the authorization cookies
+// 	accessToken, refreshToken := util.GenerateTokens(u.UUID.String())
+// 	accessCookie, refreshCookie := util.GetAuthCookies(accessToken, refreshToken)
+// 	c.Cookie(accessCookie)
+// 	c.Cookie(refreshCookie)
+
+// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 		"access_token":  accessToken,
+// 		"refresh_token": refreshToken,
+// 	})
+// }
 
 // LoginUser route logins a user in the app
-func LoginUser(c *fiber.Ctx) error {
+// func LoginUser(c *fiber.Ctx) error {
+// 	type LoginInput struct {
+// 		Identity string `json:"identity"`
+// 		Password string `json:"password"`
+// 	}
+
+// 	input := new(LoginInput)
+
+// 	if err := c.BodyParser(input); err != nil {
+// 		return c.JSON(fiber.Map{"error": true, "input": "Please review your input"})
+// 	}
+
+// 	u := new(models.User)
+// 	if res := db.DB.Where(
+// 		&models.User{Email: input.Identity}).Or(
+// 		&models.User{Username: input.Identity},
+// 	).First(&u); res.RowsAffected <= 0 {
+// 		return c.JSON(fiber.Map{"error": true, "general": "Invalid Credentials."})
+// 	}
+
+// 	// Comparing the password with the hash
+// 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(input.Password)); err != nil {
+// 		return c.JSON(fiber.Map{"error": true, "general": "Invalid Credentials."})
+// 	}
+
+// 	// setting up the authorization cookies
+// 	accessToken, refreshToken := util.GenerateTokens(u.UUID.String())
+// 	accessCookie, refreshCookie := util.GetAuthCookies(accessToken, refreshToken)
+// 	c.Cookie(accessCookie)
+// 	c.Cookie(refreshCookie)
+
+// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 		"access_token":  accessToken,
+// 		"refresh_token": refreshToken,
+// 	})
+// }
+
+func HandleWhatsAppLogin(c *fiber.Ctx) error {
 	type LoginInput struct {
-		Identity string `json:"identity"`
-		Password string `json:"password"`
+		Phone string `json:"phone"`
+		OTP   string `json:"otp"`
 	}
 
 	input := new(LoginInput)
 
 	if err := c.BodyParser(input); err != nil {
+		log.Printf("[ERROR] Failed to parse the input: %v", err)
 		return c.JSON(fiber.Map{"error": true, "input": "Please review your input"})
 	}
 
-	u := new(models.User)
-	if res := db.DB.Where(
-		&models.User{Email: input.Identity}).Or(
-		&models.User{Username: input.Identity},
-	).First(&u); res.RowsAffected <= 0 {
-		return c.JSON(fiber.Map{"error": true, "general": "Invalid Credentials."})
+	if len(input.OTP) == 0 {
+		u := new(models.User)
+		if res := db.DB.Where(
+			&models.User{Phone: input.Phone},
+		).First(&u); res.RowsAffected <= 0 {
+			if err := db.DB.Create(&models.User{Phone: input.Phone}).Error; err != nil {
+				log.Printf("[ERROR] Failed to create user: %v", err)
+				c.Status(fiber.StatusInternalServerError)
+				return c.JSON(fiber.Map{"error": true, "general": "Something went wrong, please try again later!"})
+			}
+		}
+
+		if !util.IsValidPhone(input.Phone) {
+			log.Printf("[ERROR] Invalid phone number: %v", input.Phone)
+			return c.JSON(fiber.Map{"error": true, "phone": "Invalid phone number"})
+		}
+
+		// send OTP to the phone number
+		err := util.GenerateOTP(input.Phone)
+		if err != nil {
+			log.Printf("[ERROR] Failed to send OTP: %v", err)
+			return c.JSON(fiber.Map{"error": true, "general": "Failed to send OTP"})
+		}
+		return c.JSON(fiber.Map{"error": false, "general": "OTP sent successfully"})
 	}
 
-	// Comparing the password with the hash
-	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(input.Password)); err != nil {
-		return c.JSON(fiber.Map{"error": true, "general": "Invalid Credentials."})
-	}
-
-	// setting up the authorization cookies
-	accessToken, refreshToken := util.GenerateTokens(u.UUID.String())
-	accessCookie, refreshCookie := util.GetAuthCookies(accessToken, refreshToken)
-	c.Cookie(accessCookie)
-	c.Cookie(refreshCookie)
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-	})
+	// verify the OTP
+	return c.JSON(fiber.Map{"error": false, "general": "OTP verified successfully"})
 }
 
 // GetAccessToken generates and sends a new access token iff there is a valid refresh token

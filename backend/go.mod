@@ -10,6 +10,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.1.1
 	github.com/google/uuid v1.1.2
 	github.com/joho/godotenv v1.3.0
+	github.com/twilio/twilio-go v1.21.1
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	gorm.io/driver/postgres v1.0.5
 	gorm.io/gorm v1.20.5

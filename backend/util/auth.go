@@ -4,12 +4,64 @@ import (
 	db "go-authentication-boilerplate/database"
 	"go-authentication-boilerplate/models"
 	"time"
-
+	"math/rand"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
+
+	twilio "github.com/twilio/twilio-go"
+	openapi "github.com/twilio/twilio-go/rest/api/v2010"
+	"os"
+	"log"
+	"fmt"
 )
 
 var jwtKey = []byte(db.PRIVKEY)
+
+func GenerateOTP(phone string) error {
+	rand.Seed(time.Now().UnixNano())
+	otp := rand.Intn(999999)
+
+	body := fmt.Sprintf("Your OTP is: %d", otp)
+	
+	// send otp to the phone number
+	err := sendSMS(phone, body)
+	return err
+}
+
+func sendSMS(phone string, body string) error {
+	// Set up Twilio client
+	accountSid := os.Getenv("TWILIO_ACCOUNT_SID")
+	authToken := os.Getenv("TWILIO_AUTH_TOKEN")
+	from := os.Getenv("TWILIO_PHONE_NUMBER")
+	client := twilio.NewRestClientWithParams(twilio.ClientParams{
+		Username: accountSid,
+		Password: authToken,
+	})
+
+	phoneString := fmt.Sprintf("whatsapp:%v", phone)
+	fromString := fmt.Sprintf("whatsapp:%v", from)
+
+	params := &openapi.CreateMessageParams{}
+	params.SetTo(phoneString)
+	params.SetFrom(fromString)
+	params.SetBody(body)
+
+	log.Printf("[INFO] Sending message to: %v, from: %v and body: %v", phone, from, body)
+
+	resp, err := client.Api.CreateMessage(params)
+	if err != nil {
+		log.Printf("[ERROR] Failed to send message: %v", err.Error())
+		return err
+	} else {
+		if resp.Sid != nil {
+			log.Println("[INFO] Message sent successfully. Sid: ", *resp.Sid)
+		} else {
+			log.Printf("[ERROR] Status didn't return a SID. Response: %v", resp)
+		}
+	}
+
+	return nil
+}
 
 // GenerateTokens generates the access and refresh tokens
 func GenerateTokens(uuid string) (string, string) {
