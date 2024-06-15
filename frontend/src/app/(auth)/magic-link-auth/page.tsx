@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { siteConfig } from "@/app/siteConfig";
+import { setCookie } from "nookies";
 
 const headerStyle = {
     fontSize: "24px",
@@ -10,12 +11,13 @@ const headerStyle = {
   };
 
 export default function MagicLinkAuth() {
-    const [token, setToken] = useState("");
+    const [accessToken, setAccessToken] = useState("");
+    const [refreshToken, setRefreshToken] = useState("");
 
     const verifyToken = async (token: string) => {
         try {
-            const res = await fetch(`${siteConfig.baseApiUrl}/api/user/getinfo`, {
-                method: "POST",
+            const res = await fetch(`${siteConfig.baseApiUrl}/api/user/private/getinfo`, {
+                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
@@ -25,23 +27,48 @@ export default function MagicLinkAuth() {
             const data = await res.json();
             console.log("Data:", data);
             if (data.error) {
-                alert(data.error);
+                return false
             } else {
-                alert("Token Verified Successfully!");
+                if (accessToken === "" || refreshToken === "") {
+                    console.log("Error: Access token or refresh token is empty");
+                    return false
+                }
+
+                // Save tokens to cookies
+                setCookie(null, "access_token", accessToken, { path: "/" });
+                setCookie(null, "refresh_token", refreshToken, { path: "/" });
+
+                localStorage.setItem("userinfo", JSON.stringify(data));
+                return true
             }
         } catch (error) {
             console.error("Error:", error);
-            alert("Error verifying token. Please try again.");
+            return false
         }
     }
 
     // onload, check if "token" param from URL
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get("token");
-        if (token) {
-            setToken(token);
+        let accessToken = urlParams.get("accessToken") || "";
+        let refreshToken = urlParams.get("refreshToken") || "";
+
+        if (!accessToken || !refreshToken) {
+            return;
         }
+
+        setAccessToken(accessToken);
+        setRefreshToken(refreshToken);
+
+        verifyToken(accessToken).then((verified) => {
+            if (verified) {
+                // Redirect to dashboard
+                window.location.href = "/";
+            } else {
+                // Redirect to login page
+                window.location.href = "/login";
+            }
+        });
     })
 
     return (

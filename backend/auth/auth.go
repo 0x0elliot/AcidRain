@@ -26,7 +26,7 @@ func GeneratePasswordLessLink(user *models.User) error {
 	claim, accessToken := GenerateAccessClaims(user.ID)
 	refreshToken := GenerateRefreshClaims(claim)
 	
-	url := "http://localhost:3000/api/user/magic-link-auth?accessToken=" + accessToken + "&refreshToken=" + refreshToken
+	url := "http://localhost:3000/magic-link-auth?accessToken=" + accessToken + "&refreshToken=" + refreshToken
 
 	// (from string, to []string, subject string, body string, html string, cc []string, bcc []string, replyto string, service string) error {
 	err := email.SendEmail(
