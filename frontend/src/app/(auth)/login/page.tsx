@@ -1,4 +1,8 @@
+"use client"
+
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { siteConfig } from "@/app/siteConfig";
 
 
 const centerStyle = {
@@ -17,36 +21,83 @@ const headerStyle = {
   marginBottom: "20px",
 };
 
-const greenText = {
-  color: "#25D366", // WhatsApp green color
-};
-
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState(false);
+  const [msg, setMsg] = useState("");
+
   return (
     <div style={centerStyle}>
       <header style={headerStyle}>
-        Login with <span style={greenText}>WhatsApp</span>
+        Magic Link Login with Email
       </header>
 
       <Input
-        type="tel"
-        placeholder="+11234567890"
+        type="email"
+        placeholder="Email"
         style={{ marginBottom: "10px" }}
+        onChange={(e) => setEmail(e.target.value)}
       />
 
-      {/* Add small subtitle text that says "Make sure to include the country code" */}
-      <small style={{ marginBottom: "20px", color: "gray", fontSize: "12px" }}>
-        Make sure to include the country code
-      </small>
+      <p style={{ marginBottom: "10px" }}>
+        {error ? <span style={{ color: "red" }}>{msg}</span> : msg}
+      </p>
 
       <button
         style={{
-          backgroundColor: greenText.color,
+          backgroundColor: "chocolate",
           color: "white",
           padding: "10px",
           width: "100%",
           border: "none",
           cursor: "pointer",
+        }}
+        onClick={() => {
+          console.log("Email:", email);
+
+          // Validate email format
+          const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/;
+          if (!emailPattern.test(email)) {
+            setError(true);
+            setMsg('Error: Invalid email format');
+            return;
+          }
+
+          setError(false);
+          setMsg("Sending magic link...");
+
+          // Send a GET request to the backend to generate a magic link
+          fetch(`${siteConfig.apiUrl}/api/user/passwordless-login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: email,
+            }),
+          }).then((res) => {
+            // Handle the response from the backend
+            if (res.status === 200) {
+              res.json().then((data) => {
+                let message = "Magic link sent to your email";
+                if (data.message) {
+                  message = data.message;
+                }
+                setMsg(message);
+                setError(false);
+              });
+            } else {
+              setError(true);
+              setMsg("Error: Incorrect email address");
+              res.json().then((data) => {
+                let message = "Error: Please try again later";
+                if (data.message) {
+                  message = "Error: " + data.message;
+                }
+                setMsg(message);
+              });
+            }
+          });
         }}
       >
         Login

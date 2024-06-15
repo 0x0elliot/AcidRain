@@ -1,67 +1,18 @@
-package util
+package auth
 
 import (
+	"log"
+	"time"
+
 	db "go-authentication-boilerplate/database"
 	"go-authentication-boilerplate/models"
-	"time"
-	"math/rand"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 
-	twilio "github.com/twilio/twilio-go"
-	openapi "github.com/twilio/twilio-go/rest/api/v2010"
-	"os"
-	"log"
-	"fmt"
+	email "go-authentication-boilerplate/email"
 )
 
 var jwtKey = []byte(db.PRIVKEY)
-
-func GenerateOTP(phone string) error {
-	rand.Seed(time.Now().UnixNano())
-	otp := rand.Intn(999999)
-
-	body := fmt.Sprintf("Your OTP is: %d", otp)
-	
-	// send otp to the phone number
-	err := sendSMS(phone, body)
-	return err
-}
-
-func sendSMS(phone string, body string) error {
-	// Set up Twilio client
-	accountSid := os.Getenv("TWILIO_ACCOUNT_SID")
-	authToken := os.Getenv("TWILIO_AUTH_TOKEN")
-	from := os.Getenv("TWILIO_PHONE_NUMBER")
-	client := twilio.NewRestClientWithParams(twilio.ClientParams{
-		Username: accountSid,
-		Password: authToken,
-	})
-
-	phoneString := fmt.Sprintf("whatsapp:%v", phone)
-	fromString := fmt.Sprintf("whatsapp:%v", from)
-
-	params := &openapi.CreateMessageParams{}
-	params.SetTo(phoneString)
-	params.SetFrom(fromString)
-	params.SetBody(body)
-
-	log.Printf("[INFO] Sending message to: %v, from: %v and body: %v", phone, from, body)
-
-	resp, err := client.Api.CreateMessage(params)
-	if err != nil {
-		log.Printf("[ERROR] Failed to send message: %v", err.Error())
-		return err
-	} else {
-		if resp.Sid != nil {
-			log.Println("[INFO] Message sent successfully. Sid: ", *resp.Sid)
-		} else {
-			log.Printf("[ERROR] Status didn't return a SID. Response: %v", resp)
-		}
-	}
-
-	return nil
-}
 
 // GenerateTokens generates the access and refresh tokens
 func GenerateTokens(uuid string) (string, string) {
@@ -69,6 +20,46 @@ func GenerateTokens(uuid string) (string, string) {
 	refreshToken := GenerateRefreshClaims(claim)
 
 	return accessToken, refreshToken
+}
+
+func GeneratePasswordLessLink(user *models.User) error {
+	t := time.Now()
+	claim := &models.Claims{
+		StandardClaims: jwt.StandardClaims{
+			Issuer:    user.Email,
+			ExpiresAt: t.Add(1 * time.Hour).Unix(),
+			Subject:   "passwordless",
+			IssuedAt:  t.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	tokenString, err := token.SignedString(jwtKey)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't sign the token: %v", err)
+	}
+
+	url := "http://localhost:5002/api/user/magic-link?token=" + tokenString
+
+	// (from string, to []string, subject string, body string, html string, cc []string, bcc []string, replyto string, service string) error {
+	err = email.SendEmail(
+		"wolfwithahat@protonmail.com",
+		[]string{user.Email},
+		"Passwordless Login Link!",
+		"Please click on the link to login: "+url,
+		"Please click on the link to login: <a href='"+url+"'>Login</a>",
+		[]string{},
+		[]string{},
+		"",
+		"resend",
+	)
+
+	if err != nil {
+		log.Printf("[ERROR] Couldn't send email (1): %v", err)
+		return err
+	}
+
+	return nil
 }
 
 // GenerateAccessClaims returns a claim and a acess_token string
@@ -143,7 +134,7 @@ func SecureAuth() func(*fiber.Ctx) error {
 			if claims.ExpiresAt < time.Now().Unix() {
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 					"error":   true,
-					"general": "Token Expired",
+					"message": "Token Expired",
 				})
 			}
 		} else if ve, ok := err.(*jwt.ValidationError); ok {

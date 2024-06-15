@@ -51,12 +51,11 @@ export default function RootLayout({
         suppressHydrationWarning
       >
 
-        <div className="mx-auto max-w-screen-2xl">
+        {/* <div className="mx-auto max-w-screen-2xl"> */}
         <ThemeProvider defaultTheme="system" attribute="class">
-            <Sidebar />
-            <main className="lg:pl-72">{children}</main>
+            <main>{children}</main>
           </ThemeProvider>
-        </div>
+        {/* </div> */}
 
       </body>
     </html>
