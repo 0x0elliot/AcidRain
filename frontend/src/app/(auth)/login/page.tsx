@@ -67,7 +67,7 @@ export default function Login() {
           setMsg("Sending magic link...");
 
           // Send a GET request to the backend to generate a magic link
-          fetch(`${siteConfig.apiUrl}/api/user/passwordless-login`, {
+          fetch(`${siteConfig.baseApiUrl}/api/user/passwordless-login`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

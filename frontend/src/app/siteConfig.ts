@@ -11,7 +11,7 @@ export const siteConfig = {
   externalLink: {
     blocks: "https://blocks.tremor.so/templates#dashboard",
   },
-  apiUrl: "http://localhost:5002",
+  baseApiUrl: "http://localhost:5002",
 }
 
 export type siteConfig = typeof siteConfig

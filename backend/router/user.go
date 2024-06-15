@@ -24,7 +24,7 @@ func SetupUserRoutes() {
 	// privUser handles all the private user routes that requires authentication
 	privUser := USER.Group("/private")
 	privUser.Use(auth.SecureAuth()) // middleware to secure all routes for this group
-	privUser.Get("/user", GetUserData)
+	privUser.Get("/getinfo", GetUserData)
 
 }
 
@@ -123,7 +123,7 @@ func GetUserData(c *fiber.Ctx) error {
 	id := c.Locals("id")
 
 	u := new(models.User)
-	if res := db.DB.Where("uuid = ?", id).First(&u); res.RowsAffected <= 0 {
+	if res := db.DB.Where("id = ?", id).First(&u); res.RowsAffected <= 0 {
 		return c.JSON(fiber.Map{"error": true, "message": "Cannot find the User"})
 	}
 

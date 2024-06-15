@@ -23,26 +23,13 @@ func GenerateTokens(uuid string) (string, string) {
 }
 
 func GeneratePasswordLessLink(user *models.User) error {
-	t := time.Now()
-	claim := &models.Claims{
-		StandardClaims: jwt.StandardClaims{
-			Issuer:    user.Email,
-			ExpiresAt: t.Add(1 * time.Hour).Unix(),
-			Subject:   "passwordless",
-			IssuedAt:  t.Unix(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	tokenString, err := token.SignedString(jwtKey)
-	if err != nil {
-		log.Printf("[ERROR] Couldn't sign the token: %v", err)
-	}
-
-	url := "http://localhost:5002/api/user/magic-link?token=" + tokenString
+	claim, accessToken := GenerateAccessClaims(user.ID)
+	refreshToken := GenerateRefreshClaims(claim)
+	
+	url := "http://localhost:3000/api/user/magic-link-auth?accessToken=" + accessToken + "&refreshToken=" + refreshToken
 
 	// (from string, to []string, subject string, body string, html string, cc []string, bcc []string, replyto string, service string) error {
-	err = email.SendEmail(
+	err := email.SendEmail(
 		"wolfwithahat@protonmail.com",
 		[]string{user.Email},
 		"Passwordless Login Link!",
@@ -64,12 +51,11 @@ func GeneratePasswordLessLink(user *models.User) error {
 
 // GenerateAccessClaims returns a claim and a acess_token string
 func GenerateAccessClaims(uuid string) (*models.Claims, string) {
-
 	t := time.Now()
 	claim := &models.Claims{
 		StandardClaims: jwt.StandardClaims{
 			Issuer:    uuid,
-			ExpiresAt: t.Add(1 * time.Hour).Unix(),
+			ExpiresAt: t.Add(24 * time.Hour).Unix(),
 			Subject:   "access_token",
 			IssuedAt:  t.Unix(),
 		},
@@ -123,12 +109,37 @@ func GenerateRefreshClaims(cl *models.Claims) string {
 // SecureAuth returns a middleware which secures all the private routes
 func SecureAuth() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		accessToken := c.Get("access_token")
+		accessToken := c.Get("Authorization")
+
+		if len(accessToken) > 7 {
+			if accessToken[:7] == "Bearer " {
+				accessToken = accessToken[7:]
+			}
+		} else {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error":   true,
+				"message": "Token not found",
+			})
+		}
+
+		if len(accessToken) == 0 {
+			accessToken = c.Cookies("access_token")
+		}
+
 		claims := new(models.Claims)
 		token, err := jwt.ParseWithClaims(accessToken, claims,
 			func(token *jwt.Token) (interface{}, error) {
 				return jwtKey, nil
+		})
+
+		if err != nil {
+			log.Printf("[ERROR] Couldn't parse the token: %s", accessToken)
+			log.Printf("[ERROR] Couldn't parse the token: %s", err)
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error":   true,
+				"message": "Couldn't parse the token",
 			})
+		}
 
 		if token.Valid {
 			if claims.ExpiresAt < time.Now().Unix() {
