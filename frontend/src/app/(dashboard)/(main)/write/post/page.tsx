@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { siteConfig } from "@/app/siteConfig"
 import cookies from 'nookies';
 
@@ -13,6 +13,9 @@ import TextAlign from '@tiptap/extension-text-align'
 import "./page.css"
 
 export default function Post() {
+  const [postInfo, setPostInfo] = useState({});
+  const [postContent, setPostContent] = useState('');
+  const [title, setTitle] = useState('What is the title?');
 
   const editor = useEditor({
     extensions: [
@@ -29,6 +32,7 @@ export default function Post() {
         types: ['heading', 'paragraph'],
       }),
     ],
+    content: postContent,
   });
 
   if (editor !== null) {
@@ -52,7 +56,15 @@ export default function Post() {
     .then((response) => {
       if (response.ok) {
         response.json().then((data) => {
-          console.log(data);
+          console.log("Setting data", data);
+          setPostInfo(data.post);
+          console.log("Setting title as ", data.post.title);
+          setTitle(data.post.title);
+          setPostContent(data.post.content);
+          if (editor !== null) {
+            console.log("Setting editor content as ", data.post.content);
+            editor.commands.setContent(data.post.content);
+          }
         });
       } else if (response.status === 401) {
         // redirect to login
@@ -61,10 +73,16 @@ export default function Post() {
     });
   }, []);
 
+  useEffect(() => {
+    if (editor !== null) {
+      editor.commands.setContent(postContent);
+    }
+  }, [postContent]);
+
   return (
     
     <div>
-      <h1>Write Post</h1>
+      <h1>{title}</h1>
 
       <div className="control-group">
         <div className="button-group">
