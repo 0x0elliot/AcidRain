@@ -14,6 +14,7 @@ import "./page.css"
 
 export default function Post() {
   const [postInfo, setPostInfo] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
   const [postContent, setPostContent] = useState('');
   const [title, setTitle] = useState('What is the title?');
 
@@ -56,15 +57,9 @@ export default function Post() {
     .then((response) => {
       if (response.ok) {
         response.json().then((data) => {
-          console.log("Setting data", data);
           setPostInfo(data.post);
-          console.log("Setting title as ", data.post.title);
           setTitle(data.post.title);
           setPostContent(data.post.content);
-          if (editor !== null) {
-            console.log("Setting editor content as ", data.post.content);
-            editor.commands.setContent(data.post.content);
-          }
         });
       } else if (response.status === 401) {
         // redirect to login
@@ -79,10 +74,66 @@ export default function Post() {
     }
   }, [postContent]);
 
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleInputChange = (e) => {
+    setTitle(e.target.value);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+  };
+
+  const handleSave = () => {
+    // get current content
+    if (editor !== null) {
+      let content = editor.getHTML();
+
+      let accessToken = cookies.get(null).access_token;
+
+      fetch(`${siteConfig.baseApiUrl}/api/post/private/set`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          id: postInfo.id,
+          title: title,
+          content: content,
+        }),
+      })
+
+
+    }
+  };
+
   return (
-    
     <div>
-      <h1>{title}</h1>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto' }}>
+        <div>
+          {isEditing ? (
+            <input
+              type="text"
+              value={title}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              autoFocus
+            />
+          ) : (
+            <h1 onClick={handleEditClick}>{title}</h1>
+          )}
+        </div>
+        <div>
+            <button onClick={handleSave} style={{ marginLeft: '8px', padding: '8px 16px', borderRadius: '4px', backgroundColor: '#007bff', color: '#ffffff', border: 'none', cursor: 'pointer' }}>
+              Save
+            </button>
+        </div>
+      </div>
 
       <div className="control-group">
         <div className="button-group">

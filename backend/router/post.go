@@ -77,6 +77,8 @@ func HandleSetPost(c *fiber.Ctx) error {
 			})
 		}
 
+		post.OwnerID = dbPost.OwnerID
+		post.CreatedAt = dbPost.CreatedAt
 		// check if the user is the owner of the post
 		if dbPost.OwnerID != c.Locals("id").(string) {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
