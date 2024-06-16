@@ -107,7 +107,11 @@ func GetAccessToken(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusForbidden)
 	}
 
-	_, accessToken := auth.GenerateAccessClaims(refreshClaims.Issuer)
+	_, accessToken, err := auth.GenerateAccessClaims(refreshClaims.Issuer)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't generate access token: %v", err)
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": true, "message": "Couldn't generate access token"})
+	}
 
 	c.Cookie(&fiber.Cookie{
 		Name:     "access_token",

@@ -1,130 +1,39 @@
 "use client"
-import { CategoryBarCard } from "@/components/ui/overview/DashboardCategoryBarCard"
-import { ChartCard } from "@/components/ui/overview/DashboardChartCard"
-import { Filterbar } from "@/components/ui/overview/DashboardFilterbar"
-import { ProgressBarCard } from "@/components/ui/overview/DashboardProgressBarCard"
+
 import { overviews } from "@/data/overview-data"
-import { OverviewData } from "@/data/schema"
-import { cx } from "@/lib/utils"
 import { subDays, toDate } from "date-fns"
 import React from "react"
 import { DateRange } from "react-day-picker"
+import { LineChart } from '@tremor/react';
 
-export type PeriodValue = "previous-period" | "last-year" | "no-comparison"
-
-const categories: {
-  title: keyof OverviewData
-  type: "currency" | "unit"
-}[] = [
+const chartdata = [
   {
-    title: "Rows read",
-    type: "unit",
+    date: 'Jan 24',
+    Subscribers: 0,
   },
   {
-    title: "Rows written",
-    type: "unit",
+    date: 'Feb 24',
+    Subscribers: 1, 
   },
   {
-    title: "Queries",
-    type: "unit",
+    date: 'Mar 24',
+    Subscribers: 0,
   },
   {
-    title: "Payments completed",
-    type: "currency",
+    date: 'Apr 24',
+    Subscribers: 5,
   },
   {
-    title: "Sign ups",
-    type: "unit",
+    date: 'May 24',
+    Subscribers: 3,
   },
   {
-    title: "Logins",
-    type: "unit",
+    date: 'Jun 24',
+    Subscribers: 7,
   },
 ]
 
-export type KpiEntry = {
-  title: string
-  percentage: number
-  current: number
-  allowed: number
-  unit?: string
-}
 
-const data: KpiEntry[] = [
-  {
-    title: "Rows read",
-    percentage: 48.1,
-    current: 48.1,
-    allowed: 100,
-    unit: "M",
-  },
-  {
-    title: "Rows written",
-    percentage: 78.3,
-    current: 78.3,
-    allowed: 100,
-    unit: "M",
-  },
-  {
-    title: "Storage",
-    percentage: 26,
-    current: 5.2,
-    allowed: 20,
-    unit: "GB",
-  },
-]
-
-const data2: KpiEntry[] = [
-  {
-    title: "Weekly active users",
-    percentage: 21.7,
-    current: 21.7,
-    allowed: 100,
-    unit: "%",
-  },
-  {
-    title: "Total users",
-    percentage: 70,
-    current: 28,
-    allowed: 40,
-  },
-  {
-    title: "Uptime",
-    percentage: 98.3,
-    current: 98.3,
-    allowed: 100,
-    unit: "%",
-  },
-]
-
-export type KpiEntryExtended = Omit<
-  KpiEntry,
-  "current" | "allowed" | "unit"
-> & {
-  value: string
-  color: string
-}
-
-const data3: KpiEntryExtended[] = [
-  {
-    title: "Base tier",
-    percentage: 68.1,
-    value: "$200",
-    color: "bg-indigo-600 dark:bg-indigo-500",
-  },
-  {
-    title: "On-demand charges",
-    percentage: 20.8,
-    value: "$61.1",
-    color: "bg-purple-600 dark:bg-indigo-500",
-  },
-  {
-    title: "Caching",
-    percentage: 11.1,
-    value: "$31.9",
-    color: "bg-gray-400 dark:bg-gray-600",
-  },
-]
 
 const overviewsDates = overviews.map((item) => toDate(item.date).getTime())
 const maxDate = toDate(Math.max(...overviewsDates))
@@ -137,16 +46,60 @@ export default function Overview() {
     to: maxDate,
   })
 
+  const customTooltip = (props) => {
+    const { payload, active } = props;
+    if (!active || !payload) return null;
+    return (
+      <div className="w-56 rounded-tremor-default border border-tremor-border bg-tremor-background p-2 text-tremor-default shadow-tremor-dropdown">
+        {payload.map((category, idx) => (
+          <div key={idx} className="flex flex-1 space-x-2.5 dark:text-gray-50 text-gray-900">
+            <div
+              className={`flex w-1 flex-col bg-${category.color}-500 rounded`}
+            />
+            <div className="space-y-1">
+              <p className="text-tremor-content">{category.payload.date}</p>
+              <p className="font-medium text-tremor-content-emphasis">
+                {category.value} Active Subscribers
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+
   return (
     <>
       <section aria-labelledby="flows-title">
         <h1
-          id="current-billing-cycle"
+          id="overall-title"
           className="scroll-mt-10 text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50"
         >
           Your Newsletter Performance
         </h1>
       </section>
+
+      {/* Add spacing and then use imports to render a chart of active subsscribers with dummy data */}
+      <div className="scroll-mt-10" style={{ marginTop: '20px'}}>
+        <>
+          <h3 className="text-lg font-medium text-tremor-content-strong text-gray-900 dark:text-gray-50">
+            Subscribers
+          </h3>
+          <div className="sticky top-16 z-20 flex items-center justify-between border-b border-gray-200 bg-white pb-4 pt-4 sm:pt-6 lg:top-0 lg:mx-0 text-gray-900 lg:px-0 lg:pt-8 dark:border-gray-800 dark:bg-gray-950">
+            <LineChart
+              className="mt-4 h-72 text-gray-900 dark:text-gray-50"
+              // className="h-72"
+              data={chartdata}
+              index="date"
+              categories={['Subscribers']}
+              colors={['blue']}
+              // yAxisWidth={30}
+              customTooltip={customTooltip}
+            />
+          </div>
+        </>
+      </div>
     </>
   )
 }

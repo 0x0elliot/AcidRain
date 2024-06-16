@@ -4,8 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// USER handles all the user routes
 var USER fiber.Router
+var POST fiber.Router
 
 func hello(c *fiber.Ctx) error {
 	return c.SendString("Hello World!")
@@ -17,6 +17,10 @@ func SetupRoutes(app *fiber.App) {
 
 	USER = api.Group("/user")
 	SetupUserRoutes()
+
+	POST = api.Group("/post")
+	SetupPostRoutes()
+
 
 	api.Get("/", hello)
 }

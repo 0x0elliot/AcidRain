@@ -5,7 +5,7 @@ export const siteConfig = {
   baseLinks: {
     home: "/",
     overview: "/overview",
-    details: "/details",
+    write: "/write",
     settings: "/settings",
   },
   externalLink: {

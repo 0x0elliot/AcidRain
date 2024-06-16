@@ -4,7 +4,7 @@ import { cx, focusRing } from "@/lib/utils"
 import {
   RiHome2Line,
   RiLinkM,
-  RiListCheck,
+  RiQuillPenFill,
   RiSettings5Line,
 } from "@remixicon/react"
 import Link from "next/link"
@@ -18,7 +18,7 @@ import { UserProfileDesktop, UserProfileMobile } from "./UserProfile"
 
 const navigation = [
   { name: "Overview", href: siteConfig.baseLinks.overview, icon: RiHome2Line },
-  { name: "Details", href: siteConfig.baseLinks.details, icon: RiListCheck },
+  { name: "Write", href: siteConfig.baseLinks.write, icon: RiQuillPenFill },
   {
     name: "Settings",
     href: siteConfig.baseLinks.settings,

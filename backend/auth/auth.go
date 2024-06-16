@@ -15,21 +15,39 @@ import (
 var jwtKey = []byte(db.PRIVKEY)
 
 // GenerateTokens generates the access and refresh tokens
-func GenerateTokens(uuid string) (string, string) {
-	claim, accessToken := GenerateAccessClaims(uuid)
-	refreshToken := GenerateRefreshClaims(claim)
+func GenerateTokens(uuid string) (string, string, error) {
+	claim, accessToken, err := GenerateAccessClaims(uuid)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't generate access token: %v", err)
+		return "", "", err
+	}
 
-	return accessToken, refreshToken
+	refreshToken, err := GenerateRefreshClaims(claim)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't generate refresh token: %v", err)
+		return "", "", err	
+	}
+
+	return accessToken, refreshToken, nil
 }
 
 func GeneratePasswordLessLink(user *models.User) error {
-	claim, accessToken := GenerateAccessClaims(user.ID)
-	refreshToken := GenerateRefreshClaims(claim)
+	claim, accessToken, err := GenerateAccessClaims(user.ID)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't generate access token: %v", err)
+		return err
+	}
+
+	refreshToken, err := GenerateRefreshClaims(claim)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't generate refresh token: %v", err)
+		return err
+	}
 	
 	url := "http://localhost:3000/magic-link-auth?accessToken=" + accessToken + "&refreshToken=" + refreshToken
 
 	// (from string, to []string, subject string, body string, html string, cc []string, bcc []string, replyto string, service string) error {
-	err := email.SendEmail(
+	err = email.SendEmail(
 		"wolfwithahat@protonmail.com",
 		[]string{user.Email},
 		"Passwordless Login Link!",
@@ -50,7 +68,7 @@ func GeneratePasswordLessLink(user *models.User) error {
 }
 
 // GenerateAccessClaims returns a claim and a acess_token string
-func GenerateAccessClaims(uuid string) (*models.Claims, string) {
+func GenerateAccessClaims(uuid string) (*models.Claims, string, error) {
 	t := time.Now()
 	claim := &models.Claims{
 		StandardClaims: jwt.StandardClaims{
@@ -64,14 +82,15 @@ func GenerateAccessClaims(uuid string) (*models.Claims, string) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
-		panic(err)
+		log.Printf("[ERROR] Couldn't sign the token: %s", err)
+		return claim, "", err
 	}
 
-	return claim, tokenString
+	return claim, tokenString, nil
 }
 
 // GenerateRefreshClaims returns refresh_token
-func GenerateRefreshClaims(cl *models.Claims) string {
+func GenerateRefreshClaims(cl *models.Claims) (string, error) {
 	result := db.DB.Where(&models.Claims{
 		StandardClaims: jwt.StandardClaims{
 			Issuer: cl.Issuer,
@@ -100,10 +119,11 @@ func GenerateRefreshClaims(cl *models.Claims) string {
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaim)
 	refreshTokenString, err := refreshToken.SignedString(jwtKey)
 	if err != nil {
-		panic(err)
+		log.Printf("[ERROR] Couldn't sign the token: %s", err)
+		return "", err
 	}
 
-	return refreshTokenString
+	return refreshTokenString, nil
 }
 
 // SecureAuth returns a middleware which secures all the private routes
