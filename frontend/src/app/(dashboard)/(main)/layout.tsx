@@ -7,7 +7,6 @@ export default function Layout({
   children: React.ReactNode
 }>) {
   return (
-    // <div className="relative">
       <div className="mx-auto max-w-screen-1xl">
         <Sidebar />
         <div  className="lg:pl-72">
@@ -16,6 +15,5 @@ export default function Layout({
           </main>
         </div>
       </div>
-    // </div>
   )
 }

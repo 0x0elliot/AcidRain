@@ -81,9 +81,9 @@ export function ModalAddWorkspace({
             <DialogHeader>
               <DialogTitle>Add new workspace</DialogTitle>
               <DialogDescription className="mt-1 text-sm leading-6">
-                With free plan, you can add up to 10 workspaces.
+                Coming soon. Stay tuned!
               </DialogDescription>
-              <div className="mt-4 grid grid-cols-2 gap-4">
+              {/* <div className="mt-4 grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="workspace-name" className="font-medium">
                     Workspace name
@@ -177,7 +177,7 @@ export function ModalAddWorkspace({
                     </RadioCardItem>
                   ))}
                 </RadioCardGroup>
-              </div>
+              </div> */}
             </DialogHeader>
             <DialogFooter className="mt-6">
               <DialogClose asChild>
@@ -188,11 +188,11 @@ export function ModalAddWorkspace({
                   Go back
                 </Button>
               </DialogClose>
-              <DialogClose asChild>
+              {/* <DialogClose asChild>
                 <Button type="submit" className="w-full sm:w-fit">
                   Add workspace
                 </Button>
-              </DialogClose>
+              </DialogClose> */}
             </DialogFooter>
           </form>
         </DialogContent>

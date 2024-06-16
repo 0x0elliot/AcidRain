@@ -69,12 +69,12 @@ export default function Login() {
           // Send a GET request to the backend to generate a magic link
           fetch(`${siteConfig.baseApiUrl}/api/user/passwordless-login`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
             body: JSON.stringify({
               email: email,
             }),
+            headers: {
+              "Content-Type": "application/json",
+            },
           }).then((res) => {
             // Handle the response from the backend
             if (res.status === 200) {

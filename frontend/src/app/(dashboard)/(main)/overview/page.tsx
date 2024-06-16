@@ -144,7 +144,7 @@ export default function Overview() {
           id="current-billing-cycle"
           className="scroll-mt-10 text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50"
         >
-          Your WhatsApp Flows
+          Your Newsletter Performance
         </h1>
       </section>
     </>

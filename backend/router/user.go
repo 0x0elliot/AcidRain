@@ -14,18 +14,23 @@ import (
 
 var jwtKey = []byte(db.PRIVKEY)
 
-// SetupUserRoutes func sets up all the user routes
 func SetupUserRoutes() {
-	// USER.Post("/signup", CreateUser)              // Sign Up a user
-	// USER.Post("/signin", LoginUser)               // Sign In a user
 	USER.Get("/get-access-token", GetAccessToken) // returns a new access_token
 	USER.Post("/passwordless-login", HandlePasswordLessLogin)
+
+	USER.Post("/logout", HandleLogout)
+	USER.Get("/logout", HandleLogout)
 
 	// privUser handles all the private user routes that requires authentication
 	privUser := USER.Group("/private")
 	privUser.Use(auth.SecureAuth()) // middleware to secure all routes for this group
 	privUser.Get("/getinfo", GetUserData)
+}
 
+func HandleLogout(c *fiber.Ctx) error {
+	c.ClearCookie("access_token", "refresh_token")
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Logged out successfully"})
 }
 
 func HandlePasswordLessLogin(c *fiber.Ctx) error {
@@ -36,7 +41,8 @@ func HandlePasswordLessLogin(c *fiber.Ctx) error {
 	input := new(LoginInput)
 
 	if err := c.BodyParser(input); err != nil {
-		return c.JSON(fiber.Map{"error": true, "message": "Please review your input"})
+		log.Printf("[ERROR] Couldn't parse the input: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": true, "message": "Please review your input"})
 	}
 
 	u := new(models.User)
@@ -69,7 +75,7 @@ func GetAccessToken(c *fiber.Ctx) error {
 
 	reToken := new(RefreshToken)
 	if err := c.BodyParser(reToken); err != nil {
-		return c.JSON(fiber.Map{"error": true, "input": "Please review your input"})
+		return c.JSON(fiber.Map{"error": true, "message": "Please review your input"})
 	}
 
 	refreshToken := reToken.RefreshToken

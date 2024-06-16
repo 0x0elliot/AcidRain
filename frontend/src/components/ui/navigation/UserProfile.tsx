@@ -5,8 +5,17 @@ import { cx, focusRing } from "@/lib/utils"
 import { RiMore2Fill } from "@remixicon/react"
 
 import { DropdownUserProfile } from "./DropdownUserProfile"
+import { useEffect, useState } from "react"
 
 export const UserProfileDesktop = () => {
+  const [userInfo, setUserInfo] = useState({});
+
+  useEffect(() => {
+    const userInfoString = localStorage.getItem("userinfo") || "{}";
+    console.log(userInfoString);
+    setUserInfo(JSON.parse(userInfoString));
+  }, []);
+
   return (
     <DropdownUserProfile>
       <Button
@@ -22,9 +31,9 @@ export const UserProfileDesktop = () => {
             className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white text-xs text-gray-700 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300"
             aria-hidden="true"
           >
-            ES
+            {userInfo?.email ? userInfo?.email.charAt(0).toUpperCase() : ""}
           </span>
-          <span>Emma Stone</span>
+          <span>{userInfo?.email}</span>
         </span>
         <RiMore2Fill
           className="size-4 shrink-0 text-gray-500 group-hover:text-gray-700 group-hover:dark:text-gray-400"
@@ -36,6 +45,14 @@ export const UserProfileDesktop = () => {
 }
 
 export const UserProfileMobile = () => {
+  const [userInfo, setUserInfo] = useState({});
+
+  useEffect(() => {
+    const userInfoString = localStorage.getItem("userinfo") || "{}";
+    console.log(userInfoString);
+    setUserInfo(JSON.parse(userInfoString));
+  }, []);
+
   return (
     <DropdownUserProfile align="end">
       <Button
@@ -49,7 +66,7 @@ export const UserProfileMobile = () => {
           className="flex size-7 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white text-xs text-gray-700 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300"
           aria-hidden="true"
         >
-          ES
+          {userInfo?.email ? userInfo?.email.charAt(0).toUpperCase() : ""}
         </span>
       </Button>
     </DropdownUserProfile>
