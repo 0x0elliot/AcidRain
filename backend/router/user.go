@@ -20,12 +20,70 @@ func SetupUserRoutes() {
 
 	USER.Post("/logout", HandleLogout)
 	USER.Get("/logout", HandleLogout)
+	USER.Post("/verify-token", HandleVerifyToken)
 
 	// privUser handles all the private user routes that requires authentication
 	privUser := USER.Group("/private")
 	privUser.Use(auth.SecureAuth()) // middleware to secure all routes for this group
 	privUser.Get("/getinfo", GetUserData)
 }
+
+func HandleVerifyToken(c *fiber.Ctx) error {
+	// check if the tokens sent are valid
+	type Tokens struct {
+		AccessToken string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	tokens := new(Tokens)
+	if err := c.BodyParser(tokens); err != nil {
+		log.Printf("[ERROR] Couldn't parse the input: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": true, "message": "Please review your input"})
+	}
+
+	accessToken := tokens.AccessToken
+	refreshToken := tokens.RefreshToken
+
+	accessClaims := new(models.Claims)
+	_, err := jwt.ParseWithClaims(accessToken, accessClaims, func(token *jwt.Token) (interface{}, error) {
+			return jwtKey, nil
+	})
+
+	if err != nil {
+		log.Printf("[ERROR] Couldn't parse access token: %v", err)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": true, "message": "Invalid access token"})
+	}
+
+	refreshClaims := new(models.Claims)
+	_, err = jwt.ParseWithClaims(refreshToken, refreshClaims, func(token *jwt.Token) (interface{}, error) {
+			return jwtKey, nil
+	})
+
+	if err != nil {
+		log.Printf("[ERROR] Couldn't parse refresh token: %v", err)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": true, "message": "Invalid refresh token"})
+	}
+
+	// set cookies if valid
+	c.Cookie(&fiber.Cookie{
+		Name: "access_token",
+		Value: accessToken,
+		Expires: time.Now().Add(24 * time.Hour),
+		HTTPOnly: true,
+		Secure: true,
+	})
+
+	c.Cookie(&fiber.Cookie{
+		Name: "refresh_token",
+		Value: refreshToken,
+		Expires: time.Now().Add(24 * time.Hour),
+		HTTPOnly: true,
+		Secure: true,
+	})
+
+	return c.JSON(fiber.Map{"message": "Token verified successfully"})
+}
+
 
 func HandleLogout(c *fiber.Ctx) error {
 	c.ClearCookie("access_token", "refresh_token")

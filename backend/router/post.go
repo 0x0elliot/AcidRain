@@ -16,7 +16,7 @@ func SetupPostRoutes() {
 	privPost.Use(auth.SecureAuth()) // middleware to secure all routes for this group
 	privPost.Post("/set", HandleSetPost)
 	privPost.Get("/all", HandleGetPosts)
-	privPost.Get("/:id", HandleGetPost)
+	privPost.Get("/:postId", HandleGetPost)
 }
 
 func HandleGetPosts(c *fiber.Ctx) error {
@@ -38,7 +38,7 @@ func HandleGetPosts(c *fiber.Ctx) error {
 
 
 func HandleGetPost(c *fiber.Ctx) error {
-	postID := c.Params("id")
+	postID := c.Params("postId")
 	post, err := util.GetPost(postID)
 	if err != nil {
 		log.Printf("[ERROR] Error in get post API: %v", err)

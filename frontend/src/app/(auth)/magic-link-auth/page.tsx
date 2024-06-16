@@ -14,13 +14,13 @@ export default function MagicLinkAuth() {
     const [accessToken, setAccessToken] = useState("");
     const [refreshToken, setRefreshToken] = useState("");
 
-    const verifyToken = async (token: string) => {
+    const verifyToken = async (accessToken_: string, refreshToken_: string) => {
         try {
             const res = await fetch(`${siteConfig.baseApiUrl}/api/user/private/getinfo`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
+                    "Authorization": `Bearer ${accessToken_}`,
                 },
             });
 
@@ -29,14 +29,14 @@ export default function MagicLinkAuth() {
             if (data.error) {
                 return false
             } else {
-                if (accessToken === "" || refreshToken === "") {
+                if (accessToken_ === "" || refreshToken_ === "") {
                     console.log("Error: Access token or refresh token is empty");
                     return false
                 }
 
                 // Save tokens to cookies
-                setCookie(null, "access_token", accessToken, { path: "/" });
-                setCookie(null, "refresh_token", refreshToken, { path: "/" });
+                setCookie(null, "access_token", accessToken_, { path: "/" });
+                setCookie(null, "refresh_token", refreshToken_, { path: "/" });
 
                 localStorage.setItem("userinfo", JSON.stringify(data));
                 return true
@@ -50,17 +50,17 @@ export default function MagicLinkAuth() {
     // onload, check if "token" param from URL
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
-        let accessToken = urlParams.get("accessToken") || "";
-        let refreshToken = urlParams.get("refreshToken") || "";
+        let accessToken_ = urlParams.get("accessToken") || "";
+        let refreshToken_ = urlParams.get("refreshToken") || "";
 
-        if (!accessToken || !refreshToken) {
+        if (!accessToken_ || !refreshToken_) {
             return;
         }
 
-        setAccessToken(accessToken);
-        setRefreshToken(refreshToken);
+        setAccessToken(accessToken_);
+        setRefreshToken(refreshToken_);
 
-        verifyToken(accessToken).then((verified) => {
+        verifyToken(accessToken_, refreshToken_).then((verified) => {
             if (verified) {
                 // Redirect to dashboard
                 window.location.href = "/";
@@ -69,7 +69,7 @@ export default function MagicLinkAuth() {
                 window.location.href = "/login";
             }
         });
-    })
+        }, []);
 
     return (
         <div>
