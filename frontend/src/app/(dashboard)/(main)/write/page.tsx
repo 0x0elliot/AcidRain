@@ -5,7 +5,32 @@ import { siteConfig } from '@/app/siteConfig';
 import { useEffect, useState } from 'react';
 // get cookies from nookies
 import cookies, { destroyCookie } from 'nookies';
+import { Card } from '@tremor/react';
 
+const PostCard = ({ post }) => {
+  const characterCount = post.content.length;
+
+  const formatDateTime = (dateTimeString) => {
+    const dateTime = new Date(dateTimeString);
+    return dateTime.toLocaleString(); // Adjust format as needed
+  };
+
+  return (
+    <Card className="mx-auto max-w-xs mt-4 rounded-lg shadow-md">
+      <div className="px-4 py-3">
+        <p className="text-gray-800 text-lg font-semibold mb-2">{post.title}</p>
+        <div className="flex justify-between mb-2">
+          <p className="text-gray-600 text-sm">Last Updated: {formatDateTime(post.updated_at)}</p>
+          <p className="text-gray-600 text-sm">Created At: {formatDateTime(post.created_at)}</p>
+        </div>
+        <p className="text-gray-700 text-sm mb-2">Character Count: {characterCount}</p>
+        <a href={`/write/post?post_id=${post.id}`} className="text-blue-500 text-sm hover:underline">
+          Read More
+        </a>
+      </div>
+    </Card>
+  );
+};
 export default function Write() {
   const [posts, setPosts] = useState([]);
 
@@ -62,7 +87,7 @@ export default function Write() {
       .then((response) => {
         if (response.ok) {
           response.json().then((data) => {
-            setPosts(data);
+            setPosts(data.posts);
           });
         } else if (response.status === 401) {
           window.location.href = '/login';
@@ -91,6 +116,18 @@ export default function Write() {
         <Button id="startWritingButton">
           New Post
         </Button>
+      </div>
+
+
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50">
+          Your Posts
+        </h2>
+        <div className="mt-4 grid grid-cols-3 gap-4">
+          {posts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </div>
       </div>
 
     </>

@@ -18,7 +18,7 @@ const workspaces = [
   {
     value: "retail-analytics",
     name: "Organization",
-    initials: "RA",
+    initials: "ORG",
     role: "Member",
     color: "bg-indigo-600 dark:bg-indigo-500",
   },
@@ -60,7 +60,7 @@ export const WorkspacesDropdownDesktop = () => {
               className="flex aspect-square size-8 items-center justify-center rounded bg-indigo-600 p-2 text-xs font-medium text-white dark:bg-indigo-500"
               aria-hidden="true"
             >
-              RA
+              ORG
             </span>
             <div className="flex w-full items-center justify-between gap-x-4 truncate">
               <div className="truncate">
@@ -160,7 +160,7 @@ export const WorkspacesDropdownMobile = () => {
               )}
               aria-hidden="true"
             >
-              RA
+              ORG
             </span>
             <RiArrowRightSLine
               className="size-4 shrink-0 text-gray-500"
