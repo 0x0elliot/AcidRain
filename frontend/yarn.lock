@@ -1151,6 +1151,11 @@
   dependencies:
     tippy.js "^6.3.7"
 
+"@tiptap/extension-font-family@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-font-family/-/extension-font-family-2.4.0.tgz#e66b36b11630cb68edee9553cf54b093db9af76b"
+  integrity sha512-viWyQJSxJBRn2ni7G2QgMdBqx7ysE60JBo0/1ptt5mD81+czaYYm8WkUNljljrIMV9djC8qGUlFqhI1Kx+ONaQ==
+
 "@tiptap/extension-gapcursor@^2.4.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-gapcursor/-/extension-gapcursor-2.4.0.tgz#2a738509d40f5f856492c11e32b10e4462f71216"
@@ -1262,6 +1267,11 @@
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-text-align/-/extension-text-align-2.4.0.tgz#15bda62a8f0d0feaede0632a15fb2d032ff81754"
   integrity sha512-wpRe2OiLXTK4kTy4RZEPnPjFbK16kYHPAx1552hLXrOdyxbS7Sdbo+w4x7aGLLZZqZdudCFfkdtnqrc7PDVZdA==
+
+"@tiptap/extension-text-style@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-text-style/-/extension-text-style-2.4.0.tgz#9f86d8de4606bc37090b7b02c2aaf40bb37a860f"
+  integrity sha512-H0uPWeZ4sXz3o836TDWnpd38qClqzEM2d6QJ9TK+cQ1vE5Gp8wQ5W4fwUV1KAHzpJKE/15+BXBjLyVYQdmXDaQ==
 
 "@tiptap/extension-text@^2.4.0":
   version "2.4.0"
@@ -5780,6 +5790,13 @@ tiptap-extension-resize-image@^1.1.7:
   resolved "https://registry.yarnpkg.com/tiptap-extension-resize-image/-/tiptap-extension-resize-image-1.1.7.tgz#ebd4ce2babff191382763f6406b3a31f207b0aba"
   integrity sha512-PrYKPufFJijjiV8Tp/gZU84sCTzLnf/65zKzgHL2GNdY9C9VtaPME93qIZxUrIppXRF9oB8q+KWFHFVTJQei7w==
 
+tiptap-footnotes@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/tiptap-footnotes/-/tiptap-footnotes-1.1.0.tgz#aaa95c91884e8428d59b53a80a49b8af24f99a4b"
+  integrity sha512-370CeUn+LAszMSl/TnmyN0zrFYOpoUZdhFxugBz0lRI2U292K5z+6lo/p2WpbhZBtgh7scDAZj1WaHAxH6bxQQ==
+  dependencies:
+    uuid "^9.0.1"
+
 tiptap-markdown@^0.8.10:
   version "0.8.10"
   resolved "https://registry.yarnpkg.com/tiptap-markdown/-/tiptap-markdown-0.8.10.tgz#864a54befc17b25e7f475ff6072de3d49814f09b"
@@ -6050,7 +6067,7 @@ util-deprecate@^1.0.2:
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
   integrity sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==
 
-uuid@^9.0.0:
+uuid@^9.0.0, uuid@^9.0.1:
   version "9.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
   integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==

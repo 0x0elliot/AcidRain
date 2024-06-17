@@ -5,10 +5,13 @@ import { siteConfig } from "@/app/siteConfig"
 import cookies from 'nookies';
 
 import { useEditor, EditorContent } from "@tiptap/react";
-import { StarterKit } from "@syfxlin/tiptap-starter-kit";
+import { Document, StarterKit } from "@syfxlin/tiptap-starter-kit";
 import { Markdown } from 'tiptap-markdown';
 import TextAlign from '@tiptap/extension-text-align'
 import ImageResize from 'tiptap-extension-resize-image';
+import { Footnotes, FootnoteReference, Footnote } from "tiptap-footnotes";
+import FontFamily from '@tiptap/extension-font-family';
+import TextStyle from '@tiptap/extension-text-style';
 
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -25,17 +28,28 @@ export default function Post() {
     extensions: [
       StarterKit.configure({
         // disable
-        emoji: false,
+        emoji: true,
+        document: false,
         // configure
         heading: {
           levels: [1, 2],
         },
       }),
+      Document.extend({
+        content: "block+ footnotes",
+      }),
       Markdown,
       ImageResize,
+      Footnotes,
+      Footnote,
+      FootnoteReference,
+      TextStyle,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      FontFamily.configure({
+        types: ['textStyle'],
+      })
     ],
     content: postContent,
   });
@@ -75,9 +89,9 @@ export default function Post() {
   useEffect(() => {
     if (editor !== null) {
       editor.commands.setContent(postContent);
+      editor.commands.setFontFamily('Trebuchet MS');
     }
   }, [postContent]);
-
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -165,12 +179,6 @@ export default function Post() {
             className={editor?.isActive({ textAlign: 'right' }) ? 'is-active' : ''}
           >
             Right
-          </button>
-          <button
-            onClick={() => editor?.chain().focus().setTextAlign('justify').run()}
-            className={editor?.isActive({ textAlign: 'justify' }) ? 'is-active' : ''}
-          >
-            Justify
           </button>
           <button onClick={() => editor?.chain().focus().unsetTextAlign().run()}>Unset text align</button>
 

@@ -55,7 +55,8 @@
 
 .editor-content {
     margin-left: 5px;
-    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol" !important;
+
+    --tiptap-color-primary: #123455 !important;
     /* Use the default font family */
     font-size: 14px;
     /* Set the font size to 14px */
@@ -70,6 +71,10 @@
 
     min-height: 600px;
     width: 100%;
+}
+
+.editor-content hr {
+  margin: 0 !important;
 }
 
 .editor-content h1 {

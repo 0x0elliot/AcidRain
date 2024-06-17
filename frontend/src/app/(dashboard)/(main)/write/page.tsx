@@ -46,8 +46,8 @@ export default function Write() {
       },
       mode: 'cors',
       body: JSON.stringify({
-        title: 'New Post',
-        content: 'Start writing your post here.',
+        title: 'Your interesting title',
+        content: '<p style="font-family: Trebuchet MS !important;">Start writing here...</p>',
       }),
     })
 

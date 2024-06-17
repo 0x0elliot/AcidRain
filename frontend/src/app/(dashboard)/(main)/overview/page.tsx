@@ -8,28 +8,8 @@ import { LineChart } from '@tremor/react';
 
 const chartdata = [
   {
-    date: 'Jan 24',
-    Subscribers: 0,
-  },
-  {
-    date: 'Feb 24',
-    Subscribers: 1, 
-  },
-  {
-    date: 'Mar 24',
-    Subscribers: 0,
-  },
-  {
-    date: 'Apr 24',
-    Subscribers: 5,
-  },
-  {
-    date: 'May 24',
-    Subscribers: 3,
-  },
-  {
     date: 'Jun 24',
-    Subscribers: 7,
+    Subscribers: 0,
   },
 ]
 
@@ -100,6 +80,9 @@ export default function Overview() {
           </div>
         </>
       </div>
+
+      
+
     </>
   )
 }
