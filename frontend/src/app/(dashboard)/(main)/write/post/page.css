@@ -1,47 +1,47 @@
 .control-group {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-  }
-  
-  .button-group {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .text-align-button {
-    padding: 10px 15px;
-    font-size: 16px;
-    border: 2px solid #ccc;
-    border-radius: 5px;
-    background-color: #f8f8f8;
-    color: #333;
-    cursor: pointer;
-    transition: background-color 0.3s, border-color 0.3s;
-  }
-  
-  .text-align-button:hover {
-    background-color: #e0e0e0;
-    border-color: #999;
-  }
-  
-  .text-align-button.is-active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-  }
-  
-  .text-align-button.unset-button {
-    background-color: #ff4d4d;
-    color: white;
-    border-color: #ff4d4d;
-  }
-  
-  .text-align-button.unset-button:hover {
-    background-color: #ff3333;
-    border-color: #ff3333;
-  }
-  
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+.text-align-button {
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  background-color: #f8f8f8;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.text-align-button:hover {
+  background-color: #e0e0e0;
+  border-color: #999;
+}
+
+.text-align-button.is-active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.text-align-button.unset-button {
+  background-color: #ff4d4d;
+  color: white;
+  border-color: #ff4d4d;
+}
+
+.text-align-button.unset-button:hover {
+  background-color: #ff3333;
+  border-color: #ff3333;
+}
+
 
 .editor-container {
     border: 1px solid #e0e0e0;

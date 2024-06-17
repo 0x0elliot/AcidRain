@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { siteConfig } from "@/app/siteConfig"
 import cookies from 'nookies';
 
@@ -8,6 +8,9 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import { StarterKit } from "@syfxlin/tiptap-starter-kit";
 import { Markdown } from 'tiptap-markdown';
 import TextAlign from '@tiptap/extension-text-align'
+import ImageResize from 'tiptap-extension-resize-image';
+
+import toast, { Toaster } from 'react-hot-toast';
 
 
 import "./page.css"
@@ -29,6 +32,7 @@ export default function Post() {
         },
       }),
       Markdown,
+      ImageResize,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
@@ -106,8 +110,14 @@ export default function Post() {
           title: title,
           content: content,
         }),
-      })
-
+      }).then((response) => {
+        if (response.status === 200) {
+          toast.success('Post saved successfully');
+        } else {
+          toast.error('Failed to save post');
+        }
+      }
+      );
 
     }
   };
@@ -115,6 +125,7 @@ export default function Post() {
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto' }}>
+        <Toaster />
         <div>
           {isEditing ? (
             <input
@@ -162,6 +173,13 @@ export default function Post() {
             Justify
           </button>
           <button onClick={() => editor?.chain().focus().unsetTextAlign().run()}>Unset text align</button>
+
+          <button
+            onClick={() => editor?.chain().focus().setImage({ src: 'https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_square.jpg' }).run()}
+            className={editor?.isActive({ heading: { level: 1 } }) ? 'is-active' : ''}
+          >
+            Add Image
+          </button>
         </div>
       </div>
       
