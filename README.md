@@ -1,3 +1,4 @@
 # TO do
-- Change to email one click login instead
-- Look into facebook flow for login
+- Add publishing + subscribing options
+- Add testing options
+- Add option to inspect audience
