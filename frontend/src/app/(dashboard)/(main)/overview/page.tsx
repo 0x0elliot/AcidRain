@@ -3,6 +3,7 @@
 import { siteConfig } from "@/app/siteConfig";
 import React from "react"
 import { useEffect } from "react"
+import cookies from 'nookies';
 
 export default function Overview() {
   const [shopExists, setShopExists] = React.useState(false);
@@ -32,7 +33,15 @@ export default function Overview() {
   // get the response, check if data.shops is empty.
   // if it is, then show the "Add a shop" button
   useEffect(() => {
-    fetch('/api/shop/private/all')
+    let accessToken = cookies.get(null).access_token;
+
+    fetch(`${siteConfig.baseApiUrl}/api/shop/private/all`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    })
       .then(response => response.json())
       .then(data => {
         if (data.shops.length > 0) {

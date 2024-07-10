@@ -13,7 +13,7 @@ func SetupShopRoutes() {
 	// set up
 	privShop := SHOP.Group("/private")
 	privShop.Use(auth.SecureAuth()) // middleware to secure all routes for this group
-	privShop.Get("/all", HandleGetAllAccessibleShops)
+	privShop.Get("/get", HandleGetAllAccessibleShops)
 }
 
 func HandleGetAllAccessibleShops(c *fiber.Ctx) error {
@@ -24,6 +24,10 @@ func HandleGetAllAccessibleShops(c *fiber.Ctx) error {
 			"error": true,
 			"message":   "Error getting shops",
 		})
+	}
+
+	for i := range shops {
+		shops[i].AccessToken = ""
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{

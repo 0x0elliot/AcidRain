@@ -115,7 +115,7 @@ func HandleShopifyOauthCallback(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": true, "message": "Couldn't get access token"})
 	}
 
-	user := c.Locals("user").(*models.User)
+	userID := c.Locals("id").(string)
 
 	// return c.JSON(fiber.Map{"access_token": accessToken})
 
@@ -126,7 +126,7 @@ func HandleShopifyOauthCallback(c *fiber.Ctx) error {
 		s.Name = shop
 		s.ShopIdentifier = shop
 		s.AccessToken = accessToken
-		s.OwnerID = user.ID
+		s.OwnerID = userID
 		s.Platform = "shopify"
 		if err := db.DB.Create(&s).Error; err != nil {
 			log.Printf("[ERROR] Couldn't create shop: %v", err)

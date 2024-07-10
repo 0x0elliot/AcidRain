@@ -65,6 +65,6 @@ func ConnectToDB() {
 	DB.Logger = logger.Default.LogMode(logger.Info)
 
 	log.Print("Running the migrations...")
-	DB.AutoMigrate(&models.User{}, &models.Claims{}, &models.Post{})
+	DB.AutoMigrate(&models.User{}, &models.Claims{}, &models.Post{}, &models.Shop{})
 
 }
