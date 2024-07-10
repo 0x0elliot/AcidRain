@@ -17,6 +17,7 @@ var jwtKey = []byte(db.PRIVKEY)
 func SetupUserRoutes() {
 	USER.Get("/get-access-token", GetAccessToken) // returns a new access_token
 	USER.Post("/passwordless-login", HandlePasswordLessLogin)
+	USER.Get("/shopify-oauth", HandleRedirectToShopifyOAuth)
 
 	USER.Post("/logout", HandleLogout)
 	USER.Get("/logout", HandleLogout)
@@ -89,6 +90,18 @@ func HandleLogout(c *fiber.Ctx) error {
 	c.ClearCookie("access_token", "refresh_token")
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Logged out successfully"})
+}
+
+func HandleRedirectToShopifyOAuth(c *fiber.Ctx) error {
+	shopName := c.Query("shop")
+
+	if len(shopName) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": true, "message": "Shop name is required"})
+	}
+
+	authURL := auth.GenerateAuthURL(shopName)
+	// redirect to the shopify auth url
+	return c.Redirect(authURL)
 }
 
 func HandlePasswordLessLogin(c *fiber.Ctx) error {
