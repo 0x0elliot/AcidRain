@@ -16,7 +16,6 @@ func GetPosts(ownerID string) ([]models.Post, error) {
 	return posts, nil
 }
 
-
 func GetPost(id string) (*models.Post, error) {
 	post := new(models.Post)
 	txn := db.DB.Where("id = ?", id).First(post)
@@ -48,3 +47,14 @@ func SetPost(post *models.Post) (*models.Post, error) {
 
 	return post, nil
 }
+
+func GetShops(ownerID string) ([]models.Shop, error) {
+	shops := []models.Shop{}
+	txn := db.DB.Where("owner_id = ?", ownerID).Find(&shops)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting shops: %v", txn.Error)
+		return shops, txn.Error
+	}
+	return shops, nil
+}
+

@@ -27,6 +27,7 @@ func SetupUserRoutes() {
 	privUser := USER.Group("/private")
 	privUser.Use(auth.SecureAuth()) // middleware to secure all routes for this group
 	privUser.Get("/getinfo", GetUserData)
+	privUser.Get("/shopify/callback", HandleShopifyOauthCallback)
 }
 
 func HandleVerifyToken(c *fiber.Ctx) error {
@@ -92,6 +93,57 @@ func HandleLogout(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Logged out successfully"})
 }
 
+func HandleShopifyOauthCallback(c *fiber.Ctx) error {
+	// get the query params
+	code := c.Query("code")
+	hmac := c.Query("hmac")
+	host := c.Query("host")
+	shop := c.Query("shop")
+	state := c.Query("state")
+	timestamp := c.Query("timestamp")
+
+	if len(code) == 0 || len(hmac) == 0 || len(host) == 0 || len(shop) == 0 || len(state) == 0 || len(timestamp) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": true, "message": "Invalid query parameters"})
+	}
+
+	ctx := c.Context()
+
+	// get the access token
+	accessToken, err := auth.ExchangeToken(ctx, shop, code)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't get access token: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": true, "message": "Couldn't get access token"})
+	}
+
+	user := c.Locals("user").(*models.User)
+
+	// return c.JSON(fiber.Map{"access_token": accessToken})
+
+	// check if the shop exists
+	s := new(models.Shop)
+	if res := db.DB.Where("shop_identifier = ?", shop).First(&s); res.RowsAffected <= 0 {
+		// create a new shop
+		s.Name = shop
+		s.ShopIdentifier = shop
+		s.AccessToken = accessToken
+		s.OwnerID = user.ID
+		s.Platform = "shopify"
+		if err := db.DB.Create(&s).Error; err != nil {
+			log.Printf("[ERROR] Couldn't create shop: %v", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": true, "message": "Couldn't create shop"})
+		}
+	} else {
+		// update the access token
+		s.AccessToken = accessToken
+		if err := db.DB.Save(&s).Error; err != nil {
+			log.Printf("[ERROR] Couldn't update shop: %v", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": true, "message": "Couldn't update shop"})
+		}
+	}
+
+	return c.JSON(fiber.Map{"message": "Shopify OAuth callback successful"})
+}
+
 func HandleRedirectToShopifyOAuth(c *fiber.Ctx) error {
 	shopName := c.Query("shop")
 
@@ -101,7 +153,7 @@ func HandleRedirectToShopifyOAuth(c *fiber.Ctx) error {
 
 	authURL := auth.GenerateAuthURL(shopName)
 	// redirect to the shopify auth url
-	return c.Redirect(authURL)
+	return c.JSON(fiber.Map{"auth_url": authURL})
 }
 
 func HandlePasswordLessLogin(c *fiber.Ctx) error {

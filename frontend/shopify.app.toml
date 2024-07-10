@@ -14,7 +14,7 @@ include_config_on_deploy = true
 scopes = "read_products,write_products"
 
 [auth]
-redirect_urls = [ "https://localhost:3000/", "http://localhost:3000/api/user/shopify/callback" ]
+redirect_urls = [ "https://localhost:3000/", "http://localhost:3000/api/user/shopify/callback" , "http://localhost:3000/shopify/callback" ]
 
 [webhooks]
 api_version = "2024-07"
