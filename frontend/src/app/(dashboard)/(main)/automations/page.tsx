@@ -5,8 +5,10 @@ import React from "react"
 import { useEffect } from "react"
 import cookies from 'nookies';
 
-export default function Overview() {
-  const [shopExists, setShopExists] = React.useState(false);
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+export default function Automations() {
+  const [shopExists, setShopExists] = React.useState(true);
 
   const [showPopup, setShowPopup] = React.useState(false);
   const [shopName, setShopName] = React.useState("");
@@ -46,6 +48,8 @@ export default function Overview() {
       .then(data => {
         if (data.shops.length > 0) {
           setShopExists(true);
+        } else {
+          setShopExists(false);
         }
       });
   }
@@ -127,21 +131,41 @@ export default function Overview() {
           </div>
         </div>
         </div>
-      )}
-{/*   
-      {shopExists ? null : (
-        <button
-          type="button"
-          className="inline-flex items-center px-4 py-2 mt-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          onClick={() => {
-            window.location.href = siteConfig.baseApiUrl + "/api/user/shopify-oauth";
-          }}
-        >
-          Add a shop
-        </button>
-      )} */}
+      )} 
 
-      
+      {/* Add two clickable "tabs" from shadcn */}
+      {/* The first tab should be "Order Automations" */}
+      {/* The second tab should be "Promotion Automations" */}
+      <div className="my-tabs">
+      <Tabs defaultValue="order" className="w-[400px]">
+        <TabsList>
+          <TabsTrigger value="order">Order Automations</TabsTrigger>
+          <TabsTrigger value="promotion">Promotion Automations</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="order">
+          {/* Create a pretty page with header "Order Automations" */}
+          {/* This page should have a description of what order automations are and a list of options */}
+
+          <h1>Order Automations</h1>
+
+          <h2>Order Confirmation</h2>
+
+          <p>Send a confirmation message to the customer after they place an order.</p>
+
+          <h2>Order Status Updates</h2>
+
+          
+
+
+        </TabsContent>
+
+        <TabsContent value="promotion">
+          <h2>Promotion Automations</h2>
+          <p>Details about Promotion Automations go here.</p>
+        </TabsContent>
+      </Tabs>
+      </div>
 
     </>
   )

@@ -1,10 +1,12 @@
+import Automations from "./(dashboard)/(main)/automations/page"
+
 export const siteConfig = {
   name: "AcidRain",
   url: "https://dashboard.tremor.so",
   description: "The only dashboard you will ever need.",
   baseLinks: {
     home: "/",
-    overview: "/overview",
+    automations: "/automations",
     write: "/write",
     settings: "/settings",
   },

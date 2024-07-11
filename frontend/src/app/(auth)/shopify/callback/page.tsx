@@ -27,7 +27,7 @@ export default function ShopifyCallback() {
                     return;
                 } else {
                     // Set the cookie with the token
-                    window.location.href = "/overview"
+                    window.location.href = "/automations";
                 }
             });
     }, []);

@@ -17,13 +17,13 @@ import {
 import { UserProfileDesktop, UserProfileMobile } from "./UserProfile"
 
 const navigation = [
-  { name: "Overview", href: siteConfig.baseLinks.overview, icon: RiHome2Line },
-  { name: "Write", href: siteConfig.baseLinks.write, icon: RiQuillPenFill },
-  {
-    name: "Settings",
-    href: siteConfig.baseLinks.settings,
-    icon: RiSettings5Line,
-  },
+  { name: "Automations", href: siteConfig.baseLinks.automations, icon: RiHome2Line },
+  // { name: "Write", href: siteConfig.baseLinks.write, icon: RiQuillPenFill },
+  // {
+  //   name: "Settings",
+  //   href: siteConfig.baseLinks.settings,
+  //   icon: RiSettings5Line,
+  // },
 ] as const
 
 const shortcuts = [

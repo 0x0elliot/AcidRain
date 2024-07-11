@@ -13,7 +13,7 @@ func SetupShopRoutes() {
 	// set up
 	privShop := SHOP.Group("/private")
 	privShop.Use(auth.SecureAuth()) // middleware to secure all routes for this group
-	privShop.Get("/get", HandleGetAllAccessibleShops)
+	privShop.Get("/all", HandleGetAllAccessibleShops)
 }
 
 func HandleGetAllAccessibleShops(c *fiber.Ctx) error {

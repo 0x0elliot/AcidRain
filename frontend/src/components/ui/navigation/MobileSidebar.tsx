@@ -20,7 +20,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const navigation = [
-  { name: "Overview", href: siteConfig.baseLinks.overview, icon: RiHome2Line },
+  { name: "Automations", href: siteConfig.baseLinks.automations, icon: RiHome2Line },
   { name: "Write", href: siteConfig.baseLinks.write, icon: RiQuillPenFill },
   {
     name: "Settings",
