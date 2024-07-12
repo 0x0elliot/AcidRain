@@ -15,18 +15,18 @@ import {
   RiQuillPenFill,
   RiMenuLine,
   RiSettings5Line,
+  RiLinkM,
 } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const navigation = [
   { name: "Automations", href: siteConfig.baseLinks.automations, icon: RiHome2Line },
-  { name: "Write", href: siteConfig.baseLinks.write, icon: RiQuillPenFill },
   {
-    name: "Settings",
-    href: siteConfig.baseLinks.settings,
-    icon: RiSettings5Line,
-  },
+    name: "Discord",
+    href: "https://discord.gg/y6yPVWjdD9",
+    icon: RiLinkM,
+  }
 ] as const
 
 // const shortcuts = [

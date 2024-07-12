@@ -4,6 +4,7 @@ import { cx, focusRing } from "@/lib/utils"
 import {
   RiHome2Line,
   RiLinkM,
+  RiMegaphoneLine,
   RiQuillPenFill,
   RiSettings5Line,
 } from "@remixicon/react"
@@ -24,6 +25,16 @@ const navigation = [
   //   href: siteConfig.baseLinks.settings,
   //   icon: RiSettings5Line,
   // },
+  {
+    name: "Quick Campaigns",
+    href: siteConfig.baseLinks.campaigns,
+    icon: RiMegaphoneLine
+  },
+  {
+    name: "Discord",
+    href: "https://discord.gg/y6yPVWjdD9",
+    icon: RiLinkM,
+  }
 ] as const
 
 const shortcuts = [

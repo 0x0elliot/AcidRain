@@ -7,8 +7,7 @@ export const siteConfig = {
   baseLinks: {
     home: "/",
     automations: "/automations",
-    write: "/write",
-    settings: "/settings",
+    campaigns: "/campaigns",
   },
   externalLink: {
     blocks: "https://blocks.tremor.so/templates#dashboard",

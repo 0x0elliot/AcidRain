@@ -1,4 +1,6 @@
 # TO do
-- Add publishing + subscribing options
-- Add testing options
-- Add option to inspect audience
+- [ ] Send "campaign" notification on the fly
+- [ ] SMS abandoned cart automation
+- [ ] WhatsApp abandoned cart automation
+- [ ] Email abandoned cart automation
+- [ ] Web push notification abandoned cart automation

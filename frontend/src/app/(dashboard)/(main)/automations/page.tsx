@@ -62,8 +62,17 @@ export default function Automations() {
           id="overall-title"
           className="scroll-mt-10 text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50"
         >
-          WhatsApp Automations
+          Configure Automations
         </h1>
+      </section>
+
+      <section aria-labelledby="flows-description">
+        <p
+          id="overall-description"
+          className="text-sm text-gray-500 dark:text-gray-400"
+        >
+          Configure automations for your shop.
+        </p>
       </section>
 
       {/* Have a button that says "Add a shop" that convinces the user to add a shop if they haven't already */}
@@ -136,33 +145,48 @@ export default function Automations() {
       {/* Add two clickable "tabs" from shadcn */}
       {/* The first tab should be "Order Automations" */}
       {/* The second tab should be "Promotion Automations" */}
-      <div className="my-tabs">
-      <Tabs defaultValue="order" className="w-[400px]">
+      <div className="my-tabs mt-4">
+
+
+      <Tabs defaultValue="sms" className="w-[400px]">
         <TabsList>
-          <TabsTrigger value="order">Order Automations</TabsTrigger>
-          <TabsTrigger value="promotion">Promotion Automations</TabsTrigger>
+          <TabsTrigger value="sms">SMS</TabsTrigger>
+          <TabsTrigger value="email">Email</TabsTrigger>
+          <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="order">
-          {/* Create a pretty page with header "Order Automations" */}
-          {/* This page should have a description of what order automations are and a list of options */}
 
-          <h1>Order Automations</h1>
-
-          <h2>Order Confirmation</h2>
-
-          <p>Send a confirmation message to the customer after they place an order.</p>
-
-          <h2>Order Status Updates</h2>
-
-          
-
-
+        <TabsContent value="sms">
+          <div className="p-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+              SMS Automations
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Configure SMS automations for your shop.
+            </p>
+          </div>
         </TabsContent>
 
-        <TabsContent value="promotion">
-          <h2>Promotion Automations</h2>
-          <p>Details about Promotion Automations go here.</p>
+        <TabsContent value="email">
+          <div className="p-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+              Email Automations
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Configure Email automations for your shop.
+            </p>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="whatsapp">
+          <div className="p-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+              WhatsApp Automations
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Configure WhatsApp automations for your shop.
+            </p>
+          </div>
         </TabsContent>
       </Tabs>
       </div>
