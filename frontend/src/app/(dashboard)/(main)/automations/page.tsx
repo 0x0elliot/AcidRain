@@ -13,6 +13,8 @@ export default function Automations() {
   const [showPopup, setShowPopup] = React.useState(false);
   const [shopName, setShopName] = React.useState("");
 
+  const [notificationTypes, setNotificationTypes] = React.useState(["WhatsApp", "SMS", "Email", "Push"]);
+
   const GetRedirectUrl = async (shopName: string) => {
     const response = await fetch(`${siteConfig.baseApiUrl}/api/user/shopify-oauth?shop=${shopName}`, {
       method: 'GET',
@@ -150,44 +152,25 @@ export default function Automations() {
 
       <Tabs defaultValue="sms" className="w-[400px]">
         <TabsList>
-          <TabsTrigger value="sms">SMS</TabsTrigger>
-          <TabsTrigger value="email">Email</TabsTrigger>
-          <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
+          {notificationTypes.map((type) => (
+            <TabsTrigger key={type} value={type.toLowerCase()}>{type}</TabsTrigger>
+          ))}
         </TabsList>
 
+        {notificationTypes.map((type) => (
+          <TabsContent key={type} value={type.toLowerCase()}>
+            <div className="p-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+                {type} Automations
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Configure {type} automations for your shop.
+              </p>
+            </div>
+          </TabsContent>
+        ))}
 
-        <TabsContent value="sms">
-          <div className="p-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-              SMS Automations
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Configure SMS automations for your shop.
-            </p>
-          </div>
-        </TabsContent>
 
-        <TabsContent value="email">
-          <div className="p-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-              Email Automations
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Configure Email automations for your shop.
-            </p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="whatsapp">
-          <div className="p-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-              WhatsApp Automations
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Configure WhatsApp automations for your shop.
-            </p>
-          </div>
-        </TabsContent>
       </Tabs>
       </div>
 

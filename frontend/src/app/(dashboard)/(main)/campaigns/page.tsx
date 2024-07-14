@@ -5,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function Campaigns() {
 
+    const [notificationTypes, setNotificationTypes] = React.useState(["WhatsApp", "SMS", "Email", "Push"]);
+
     return (   
         <>
             <section aria-labelledby="flows-title">
@@ -27,45 +29,28 @@ export default function Campaigns() {
 
         <div className="my-tabs mt-4">
             <Tabs defaultValue="sms" className="w-[400px]">
+                
                 <TabsList>
-                <TabsTrigger value="sms">SMS</TabsTrigger>
-                <TabsTrigger value="email">Email</TabsTrigger>
-                <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
+                    {notificationTypes.map((type) => (
+                        <TabsTrigger key={type} value={type.toLowerCase()}>
+                            {type}
+                        </TabsTrigger>
+                    ))}
                 </TabsList>
 
+                {notificationTypes.map((type) => (
+                    <TabsContent key={type} value={type.toLowerCase()}>
+                        <div className="p-4">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+                                {type} Campaigns
+                            </h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Try out {type} campaigns for your shop.
+                            </p>
+                        </div>
+                    </TabsContent>
+                ))}
 
-                <TabsContent value="sms">
-                <div className="p-4">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                    SMS Campaigns
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Try out SMS campaigns for your shop.
-                    </p>
-                </div>
-                </TabsContent>
-
-                <TabsContent value="email">
-                <div className="p-4">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                    Email Campaigns
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Try out Email campaigns for your shop.
-                    </p>
-                </div>
-                </TabsContent>
-
-                <TabsContent value="whatsapp">
-                <div className="p-4">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                    WhatsApp Campaigns
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Try out WhatsApp campaigns for your shop.
-                    </p>
-                </div>
-                </TabsContent>
             </Tabs>
         </div>
 
