@@ -22,12 +22,16 @@ export default function WebPushNotificationsCampaignSettings() {
     useEffect(() => {
         if (typeof Notification !== 'undefined') {
             if (testNotification && Notification.permission === 'granted') {
-                fetch("/api/send-test-notification", {
+                // fetch("/api/send-test-notification", {
+                fetch(`${siteConfig.baseApiUrl}/api/notification/private/push`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${accessToken}`,
                     },
-                    body: JSON.stringify({}),
+                    body: JSON.stringify({
+                        "test": true,
+                    }),
                 })
                     .then(response => response.json())
                     .then(data => {
@@ -41,22 +45,6 @@ export default function WebPushNotificationsCampaignSettings() {
             }
         }
     }, [testNotification, permission]);
-
-    const requestTestPushKeys = async () => {
-        try {
-            const response = await fetch(`${siteConfig.baseApiUrl}/api/request-test-push-keys`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({}),
-            });
-            const data = await response.json();
-            console.log("Test push keys requested:", data);
-        } catch (error) {
-            console.error("Error requesting test push keys:", error);
-        }
-    }
 
     const requestPermission = async () => {
         const result = await Notification.requestPermission();

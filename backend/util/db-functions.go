@@ -16,23 +16,35 @@ func GetUserById(id string) (*models.User, error) {
 	return user, nil
 }
 
-func DeleteAllUserOwnedNotificationSubscriptions(ownerID string) error {
-	// Ensure the model is a pointer
-	var notificationSubscription models.NotificationSubscription
-
-	// Enable GORM debug mode for detailed logs
-	db.DB = db.DB.Debug()
-
-	// Perform the delete operation
-	txn := db.DB.Where("owner_id = ?", ownerID).Delete(&notificationSubscription)
+func GetNotificationSubscriptionById(id string) (*models.NotificationSubscription, error) {
+	subscription := new(models.NotificationSubscription)
+	txn := db.DB.Where("id = ?", id).First(&subscription)
 	if txn.Error != nil {
-		log.Printf("[ERROR] Error deleting notification subscriptions: %v", txn.Error)
-		return txn.Error
+		log.Printf("[ERROR] Error getting subscription: %v", txn.Error)
+		return nil, txn.Error
+	}
+	return subscription, nil
+}
+
+func GetNoficationSubscriptionByOwnerId(ownerID string) ([]models.NotificationSubscription, error) {
+	subscription := models.NotificationSubscription{}
+	txn := db.DB.Where("owner_id = ?", ownerID).Find(&subscription)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting subscription: %v", txn.Error)
+		return nil, txn.Error
 	}
 
-	// Log the number of rows affected
-	log.Printf("[INFO] Rows affected: %d", txn.RowsAffected)
-	return nil
+	return []models.NotificationSubscription{subscription}, nil
+}
+
+func GetShops(ownerID string) ([]models.Shop, error) {
+	shops := []models.Shop{}
+	txn := db.DB.Where("owner_id = ?", ownerID).Find(&shops)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting shops: %v", txn.Error)
+		return shops, txn.Error
+	}
+	return shops, nil
 }
 
 func GetPosts(ownerID string) ([]models.Post, error) {
@@ -99,13 +111,21 @@ func SetNotficationSubscription(subscription models.NotificationSubscription) (m
 	return subscription, nil
 }
 
-func GetShops(ownerID string) ([]models.Shop, error) {
-	shops := []models.Shop{}
-	txn := db.DB.Where("owner_id = ?", ownerID).Find(&shops)
-	if txn.Error != nil {
-		log.Printf("[ERROR] Error getting shops: %v", txn.Error)
-		return shops, txn.Error
-	}
-	return shops, nil
-}
+func DeleteAllUserOwnedNotificationSubscriptions(ownerID string) error {
+	// Ensure the model is a pointer
+	var notificationSubscription models.NotificationSubscription
 
+	// Enable GORM debug mode for detailed logs
+	db.DB = db.DB.Debug()
+
+	// Perform the delete operation
+	txn := db.DB.Where("owner_id = ?", ownerID).Delete(&notificationSubscription)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error deleting notification subscriptions: %v", txn.Error)
+		return txn.Error
+	}
+
+	// Log the number of rows affected
+	log.Printf("[INFO] Rows affected: %d", txn.RowsAffected)
+	return nil
+}

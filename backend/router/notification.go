@@ -74,6 +74,40 @@ func HandlePushNotification(c *fiber.Ctx) error {
 		})
 	}
 
+	if req.Test {
+		subscriptions, err := util.GetNoficationSubscriptionByOwnerId(c.Locals("id").(string))
+		if err != nil {
+			log.Printf("[ERROR] Error getting subscriptions: %v", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": true,
+				"message":   "Error getting subscriptions",
+			})
+		}
+
+		if len(subscriptions) == 0 {
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{
+				"error": false,
+				"message":   "No subscriptions found",
+			})
+		}
+
+		for _, subscription := range subscriptions {
+			err := util.SendPushNotification(req.Body, subscription.ID)
+			if err != nil {
+				log.Printf("[ERROR] Error in sending push notification: %v", err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": true,
+					"message":   "Error sending push notification",
+				})
+			}
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"error": false,
+			"message":   "Push notification sent successfully",
+		})
+	}
+
 	// send push notification
 	err := util.SendPushNotification(req.Body, c.Locals("id").(string))
 	if err != nil {

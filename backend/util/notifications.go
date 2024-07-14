@@ -3,8 +3,9 @@ package util
 import (
 	"go-authentication-boilerplate/models"
 	"log"
+	"os"
 
-	// webpush "github.com/SherClockHolmes/webpush-go"
+	webpush "github.com/SherClockHolmes/webpush-go"
 )
 
 func SubscribeUserToPush(subscription models.NotificationSubscription, userId string) error {
@@ -40,6 +41,36 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 }
 
 func SendPushNotification(message string, subscriptionId string) error {
-	// API is in actual use
+	publicKey := os.Getenv("ACIDRAIN_WEB_PUSH_PUBLIC_KEY")
+	privateKey := os.Getenv("ACIDRAIN_WEB_PUSH_PRIVATE_KEY")
+
+	subscription, err := GetNotificationSubscriptionById(subscriptionId)
+	if err != nil {
+		log.Printf("[ERROR] Error getting subscription: %v", err)
+		return err
+	}
+
+	pushSubscription := webpush.Subscription{
+		Endpoint: subscription.Endpoint,
+		Keys: webpush.Keys{
+			Auth:   subscription.Auth,
+			P256dh: subscription.P256dh,
+		},
+	}
+
+	_, err = webpush.SendNotification([]byte(message), &pushSubscription, &webpush.Options{
+		Subscriber:      "You're subscribed to AcidRain",
+		VAPIDPublicKey: publicKey,
+		VAPIDPrivateKey: privateKey,
+		TTL:             30,
+	}) 
+
+	if err != nil {
+		log.Printf("[ERROR] Error sending push notification: %v", err)
+		return err
+	}
+
+	log.Printf("[INFO] Push notification sent successfully")
+
 	return nil
 }
