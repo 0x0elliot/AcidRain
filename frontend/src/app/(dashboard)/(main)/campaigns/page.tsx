@@ -2,6 +2,7 @@
 
 import React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import WebPushNotificationsCampaignSettings from "@/components/WebPushNotificationsCampaignSettings"
 
 export default function Campaigns() {
 
@@ -28,7 +29,7 @@ export default function Campaigns() {
             </section>
 
         <div className="my-tabs mt-4">
-            <Tabs defaultValue="sms" className="w-[400px]">
+            <Tabs defaultValue="push" className="w-[400px]">
                 
                 <TabsList>
                     {notificationTypes.map((type) => (
@@ -47,6 +48,10 @@ export default function Campaigns() {
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                                 Try out {type} campaigns for your shop.
                             </p>
+
+                            <div className="mt-4">
+                                {type === "Push" && <WebPushNotificationsCampaignSettings />}
+                            </div>
                         </div>
                     </TabsContent>
                 ))}

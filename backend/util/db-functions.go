@@ -6,6 +6,35 @@ import (
 	models "go-authentication-boilerplate/models"
 )
 
+func GetUserById(id string) (*models.User, error) {
+	user := new(models.User)
+	txn := db.DB.Where("id = ?", id).First(&user)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting user: %v", txn.Error)
+		return nil, txn.Error
+	}
+	return user, nil
+}
+
+func DeleteAllUserOwnedNotificationSubscriptions(ownerID string) error {
+	// Ensure the model is a pointer
+	var notificationSubscription models.NotificationSubscription
+
+	// Enable GORM debug mode for detailed logs
+	db.DB = db.DB.Debug()
+
+	// Perform the delete operation
+	txn := db.DB.Where("owner_id = ?", ownerID).Delete(&notificationSubscription)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error deleting notification subscriptions: %v", txn.Error)
+		return txn.Error
+	}
+
+	// Log the number of rows affected
+	log.Printf("[INFO] Rows affected: %d", txn.RowsAffected)
+	return nil
+}
+
 func GetPosts(ownerID string) ([]models.Post, error) {
 	posts := []models.Post{}
 	txn := db.DB.Where("owner_id = ?", ownerID).Find(&posts)
@@ -46,6 +75,28 @@ func SetPost(post *models.Post) (*models.Post, error) {
 	}
 
 	return post, nil
+}
+
+func SetNotficationSubscription(subscription models.NotificationSubscription) (models.NotificationSubscription, error) {
+	// check if subscription with ID exists
+	if subscription.ID == "" {
+		subscription.CreatedAt = db.DB.NowFunc().String()
+		subscription.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Create(&subscription)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error creating subscription: %v", txn.Error)
+			return subscription, txn.Error
+		}
+	} else {
+		subscription.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Save(&subscription)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error saving subscription: %v", txn.Error)
+			return subscription, txn.Error
+		}
+	}
+
+	return subscription, nil
 }
 
 func GetShops(ownerID string) ([]models.Shop, error) {

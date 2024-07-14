@@ -9,6 +9,7 @@ import (
 var USER fiber.Router
 var POST fiber.Router
 var SHOP fiber.Router
+var NOTIFICATION fiber.Router
 
 func hello(c *fiber.Ctx) error {
 	return c.SendString("Hello World!")
@@ -35,6 +36,8 @@ func SetupRoutes(app *fiber.App) {
 	SHOP = api.Group("/shop")
 	SetupShopRoutes()
 
+	NOTIFICATION = api.Group("/notification")
+	SetupNotificationRoutes()
 
 	api.Get("/", hello)
 }

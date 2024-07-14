@@ -150,7 +150,7 @@ export default function Automations() {
       <div className="my-tabs mt-4">
 
 
-      <Tabs defaultValue="sms" className="w-[400px]">
+      <Tabs defaultValue="push" className="w-[400px]">
         <TabsList>
           {notificationTypes.map((type) => (
             <TabsTrigger key={type} value={type.toLowerCase()}>{type}</TabsTrigger>

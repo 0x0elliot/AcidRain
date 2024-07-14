@@ -5,6 +5,7 @@ go 1.15
 replace go-authentication-boilerplate => ./
 
 require (
+	github.com/SherClockHolmes/webpush-go v1.3.0
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
 	github.com/bold-commerce/go-shopify/v4 v4.5.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -16,8 +17,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/resend/resend-go/v2 v2.9.0
 	github.com/satori/go.uuid v1.2.0
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
-	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gorm.io/driver/postgres v1.0.5
