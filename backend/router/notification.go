@@ -61,8 +61,28 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	subscription.P256dh = req.Subscription.Keys.P256dh
 	subscription.OwnerID = shop.OwnerID
 
+	// check if subscription already exists
+	_, err = util.GetIdenticalSubscription(subscription)
+	if err != nil {
+		if err.Error() == "record not found" {
+			// normal flow
+		} else {
+			log.Printf("[ERROR] Error getting subscription: %v", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": true,
+				"message":   "Error getting subscription",
+			})
+		}
+	} else {
+		log.Printf("[INFO] Subscription already exists")
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"error": false,
+			"message":   "Subscription already exists",
+		})
+	}
+
 	// subscribe user to push
-	err = util.SubscribeUserToPush(subscription, shop.OwnerID)
+	err = util.SubscribeUserToPush(subscription, "")
 	if err != nil {
 		log.Printf("[ERROR] Error in subscribing user to push: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

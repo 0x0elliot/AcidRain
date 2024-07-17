@@ -47,6 +47,16 @@ func GetShops(ownerID string) ([]models.Shop, error) {
 	return shops, nil
 }
 
+func GetIdenticalSubscription(subscription models.NotificationSubscription) (*models.NotificationSubscription, error) {
+	sub := new(models.NotificationSubscription)
+	txn := db.DB.Where("endpoint = ? AND auth = ? AND p256dh = ?", subscription.Endpoint, subscription.Auth, subscription.P256dh).First(sub)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting subscription: %v", txn.Error)
+		return sub, txn.Error
+	}
+	return sub, nil
+}
+
 func GetShopFromShopIdentifier(shopIdentifier string) (*models.Shop, error) {
 	shop := new(models.Shop)
 	txn := db.DB.Where("shop_identifier = ?", shopIdentifier).First(shop)

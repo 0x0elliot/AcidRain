@@ -13,7 +13,7 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 	subscription.ID = ""
 
 	if userId == "" {
-		// API is in actual use
+		// actual user is trying to subscribe
 	} else {
 		// user is trying to subscribe to test
 		log.Printf("[INFO] User %v is trying to subscribe to push notifications", userId)
