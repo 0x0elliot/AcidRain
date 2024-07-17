@@ -90,6 +90,7 @@ export function Sidebar() {
                         "flex items-center gap-x-2.5 rounded-md px-2 py-1.5 text-sm font-medium transition hover:bg-gray-100 hover:dark:bg-gray-900",
                         focusRing
                       )}
+                      target={item.name === "Discord" ? "_blank" : "_self"}
                     >
                       <item.icon className="size-4 shrink-0" aria-hidden="true" />
                       {item.name}

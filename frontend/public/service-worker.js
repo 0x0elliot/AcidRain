@@ -4,10 +4,13 @@ self.addEventListener('push', function(event) {
     // convert string to JSON
     const data = event.data.json();
     const title = data.title;
+
+    console.log('Push received: ', data);
     
     const options = {
         body: data.body,
         icon: data.icon,
+        badge: data.badge,
         data : {
             url : data.url
         },

@@ -100,6 +100,7 @@ export default function MobileSidebar() {
                           "flex items-center gap-x-2.5 rounded-md px-2 py-1.5 text-base font-medium transition hover:bg-gray-100 sm:text-sm hover:dark:bg-gray-900",
                           focusRing,
                         )}
+                        target={item.name === "Discord" ? "_blank" : "_self"}
                       >
                         <item.icon
                           className="size-5 shrink-0"
