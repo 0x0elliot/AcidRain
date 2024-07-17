@@ -1,7 +1,7 @@
 // this file will eventually belong in a CDN
 document.addEventListener('DOMContentLoaded', function () {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
-      navigator.serviceWorker.register('https://storage.googleapis.com/acidrain_public_assets/service-worker.js')
+      navigator.serviceWorker.register('/apps/acidrain/public/service-worker.js')
         .then(function (registration) {
           console.log('Service Worker registered with scope:', registration.scope);
   
@@ -38,7 +38,25 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function subscribeUserToPush(registration) {
-    const applicationServerKey = urlB64ToUint8Array('BCv7WgVIIGsZfgamKaruQEach2j6a8Us5en7Y2FIuC7PUt9aQxd2Nl2d5XIj80cfgs37DA6OE3TS1GOebJs0UTo');
+    let applicationServerKey;
+
+    // get public key from the server
+    fetch('/apps/acidrain/api/web-push-public-key', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(function (response) {
+      if (!response.ok) {
+        throw new Error('Failed to get public key from server');
+      }
+      return response.json();
+    }).then(function (data) {
+      applicationServerKey = urlB64ToUint8Array(data.publicKey);
+    }).catch(function (error) {
+      console.error('Error getting public key from server:', error);
+    });
+
     registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: applicationServerKey
@@ -69,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function sendSubscriptionToServer(subscription) {
-    fetch('http://localhost:5002/api/notification/subscribe', {
+    fetch('apps/acidrain/api/notification/subscribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
