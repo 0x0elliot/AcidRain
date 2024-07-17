@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('Already subscribed:', subscription);
                 // You can skip asking for permission if already subscribed
                 sendSubscriptionToServer(subscription);
-                requestTestNotification(subscription);
               } else {
                 askForNotificationPermission(registration);
               }
@@ -60,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(function (subscription) {
         console.log('User is subscribed:', subscription);
         sendSubscriptionToServer(subscription);
-        requestTestNotification(subscription);
       })
       .catch(function (error) {
         console.error('Failed to subscribe the user:', error);
@@ -91,14 +89,17 @@ document.addEventListener('DOMContentLoaded', function () {
       storeUrl = window.Shopify.shop;
     }
 
-    subscription.storeUrl = storeUrl;
+    requestObj = {
+      subscription: subscription,
+      storeUrl: storeUrl
+    };
 
     fetch('apps/acidrain/api/notification/subscribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(subscription)
+      body: JSON.stringify(requestObj)
     })
     .then(function (response) {
       if (!response.ok) {
@@ -111,28 +112,6 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .catch(function (error) {
       console.error('Error sending subscription to server:', error);
-    });
-  }
-  
-  function requestTestNotification(subscription) {
-    fetch('http://localhost:3000/test-notification', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(subscription)
-    })
-    .then(function (response) {
-      if (!response.ok) {
-        throw new Error('Failed to request test notification');
-      }
-      return response.json();
-    })
-    .then(function (data) {
-      console.log('Test notification requested:', data);
-    })
-    .catch(function (error) {
-      console.error('Error requesting test notification:', error);
     });
   }
   
