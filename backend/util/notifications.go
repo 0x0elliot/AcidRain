@@ -9,7 +9,11 @@ import (
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
 
-func SubscribeUserToPush(subscription models.NotificationSubscription, userId string) error {
+// the assumption here is that if this function is called, this is the first subscription
+// for the user
+func SubscribeUserToPush(subscription models.NotificationSubscription, userId string) (models.NotificationSubscription, error) {
+	var sub models.NotificationSubscription
+
 	subscription.ID = ""
 
 	if userId == "" {
@@ -20,7 +24,7 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 		_, err := GetUserById(userId)
 		if err != nil {
 			log.Printf("[ERROR] Error getting user: %v", err)
-			return err
+			return sub, err
 		}
 
 		err = DeleteAllUserOwnedNotificationSubscriptions(userId)
@@ -34,11 +38,11 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 	sub, err := SetNotficationSubscription(subscription)
 	if err != nil {
 		log.Printf("[ERROR] Error setting subscription: %v", err)
-		return err
+		return sub, err
 	}
 
 	log.Printf("[INFO] Subscription set: %v", sub)
-	return nil
+	return sub, nil
 }
 
 func SendPushNotification(title string, message string, icon string, badge string, url string, subscriptionId string) error {

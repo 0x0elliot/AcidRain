@@ -82,7 +82,7 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	}
 
 	// subscribe user to push
-	err = util.SubscribeUserToPush(subscription, "")
+	sub, err := util.SubscribeUserToPush(subscription, "")
 	if err != nil {
 		log.Printf("[ERROR] Error in subscribing user to push: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -90,6 +90,14 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 			"message":   "Error subscribing user to push",
 		})
 	}
+
+	go func() {		
+		// send push notification
+		err := util.SendPushNotification("Welcome to AcidRain", "You're now subscribed to push notifications", "https://upload.wikimedia.org/wikipedia/en/a/a9/Example.jpg", "https://upload.wikimedia.org/wikipedia/en/a/a9/Example.jpg", "http://localhost:3000", sub.ID)
+		if err != nil {
+			log.Printf("[ERROR] Error in sending push notification: %v", err)
+		}
+	}()
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error": false,
@@ -113,7 +121,7 @@ func HandleSubscribeToPush(c *fiber.Ctx) error {
 	subscription.P256dh = req.Keys.P256dh
 
 	// subscribe user to push
-	err := util.SubscribeUserToPush(subscription, c.Locals("id").(string))
+	_, err := util.SubscribeUserToPush(subscription, c.Locals("id").(string))
 	if err != nil {
 		log.Printf("[ERROR] Error in subscribing user to push: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
