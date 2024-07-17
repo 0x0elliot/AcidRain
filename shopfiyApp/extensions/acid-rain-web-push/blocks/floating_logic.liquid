@@ -1,10 +1,9 @@
-<div style="position: fixed; bottom: 0; right: 0">
-    {{ "thumbs-up.png" | asset_url | img_tag }}
-</div>
+<script src="{{ 'notification.js' | asset_url }}" async></script>
+
 {% schema %}
   {
     "name": "App Embed",
-    "target": "body",
+    "target": "head",
     "settings": []
   }
 {% endschema %}

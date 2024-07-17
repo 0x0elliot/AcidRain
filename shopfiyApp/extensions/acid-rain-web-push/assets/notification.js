@@ -1,6 +1,7 @@
+// this file will eventually belong in a CDN
 document.addEventListener('DOMContentLoaded', function () {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
-      navigator.serviceWorker.register('/service-worker.js')
+      navigator.serviceWorker.register('https://storage.googleapis.com/acidrain_public_assets/service-worker.js')
         .then(function (registration) {
           console.log('Service Worker registered with scope:', registration.scope);
   
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function sendSubscriptionToServer(subscription) {
-    fetch('http://localhost:3000/', {
+    fetch('http://localhost:5002/api/notification/subscribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

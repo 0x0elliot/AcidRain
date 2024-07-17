@@ -41,12 +41,13 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 	return nil
 }
 
-func SendPushNotification(title string, message string, icon string, url string, subscriptionId string) error {
+func SendPushNotification(title string, message string, icon string, badge string, url string, subscriptionId string) error {
 	type PushNotificationRequest struct {
 		Body string `json:"body"`
 		Title string `json:"title"`
 		Icon string `json:"icon"`
 		URL string `json:"url"`
+		Badge string `json:"badge"`
 	}
 
 	publicKey := os.Getenv("ACIDRAIN_WEB_PUSH_PUBLIC_KEY")
@@ -71,6 +72,7 @@ func SendPushNotification(title string, message string, icon string, url string,
 		Title: title,
 		Icon: icon,
 		URL: url,
+		Badge: badge,
 	}
 
 	// make sure to convert the struct to a JSON string

@@ -6,11 +6,14 @@ import (
 	models "go-authentication-boilerplate/models"
 
 	"log"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func SetupNotificationRoutes() {
+	NOTIFICATION.Post("/subscribe", HandlePublicSubscribeToPush)
+
 	// set up
 	privNotification := NOTIFICATION.Group("/private")
 
@@ -19,16 +22,73 @@ func SetupNotificationRoutes() {
 	privNotification.Post("/subscribe", HandleSubscribeToPush)
 }
 
-func HandleSubscribeToPush(c *fiber.Ctx) error {
-	type SubscribeToPushRequest struct {
-		Endpoint string `json:"endpoint"`
-		ExpirationTime int64 `json:"expirationTime"`
-		Keys struct {
-			P256dh string `json:"p256dh"`
-			Auth string `json:"auth"`
-		} `json:"keys"`
+type SubscribeToPushRequest struct {
+	Endpoint string `json:"endpoint"`
+	ExpirationTime int64 `json:"expirationTime"`
+	Keys struct {
+		P256dh string `json:"p256dh"`
+		Auth string `json:"auth"`
+	} `json:"keys"`
+}
+
+func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
+	var req SubscribeToPushRequest
+	if err := c.BodyParser(&req); err != nil {
+		log.Printf("[ERROR] Error in parsing request body: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error parsing request body",
+		})
 	}
 
+	// get the "Referrer" header from the request
+	referrer := c.Get("Referrer")
+	if referrer == "" {
+		log.Printf("[ERROR] Referrer header not found")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"message":   "Unable to determine shop",
+		})
+	}
+
+	// strip the protocol and just get the domain
+	shopIdentifier := strings.Replace(referrer, "https://", "", 1)
+	if strings.Contains(shopIdentifier, "/") {
+		shopIdentifier = strings.Split(shopIdentifier, "/")[0]
+	}
+
+	shop, err := util.GetShopFromShopIdentifier(shopIdentifier)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting shop",
+		})
+	}
+
+	var subscription models.NotificationSubscription
+	subscription.Endpoint = req.Endpoint
+	subscription.Auth = req.Keys.Auth
+	subscription.P256dh = req.Keys.P256dh
+	subscription.OwnerID = shop.OwnerID
+
+	// subscribe user to push
+	err = util.SubscribeUserToPush(subscription, shop.OwnerID)
+	if err != nil {
+		log.Printf("[ERROR] Error in subscribing user to push: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error subscribing user to push",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"message":   "User subscribed to push notifications successfully",
+	})
+}
+
+func HandleSubscribeToPush(c *fiber.Ctx) error {
 	var req SubscribeToPushRequest
 	if err := c.BodyParser(&req); err != nil {
 		log.Printf("[ERROR] Error in parsing request body: %v", err)
@@ -99,7 +159,7 @@ func HandlePushNotification(c *fiber.Ctx) error {
 			req.Body = "Test push notification"
 			req.Title = "You're now subscribed!"
 			// err := util.SendPushNotification(req.Title, req.Body, subscription.ID)
-			err := util.SendPushNotification(req.Title, req.Body, examplePic, "http://localhost:3000", subscription.ID) 
+			err := util.SendPushNotification(req.Title, req.Body, examplePic, examplePic,"http://localhost:3000", subscription.ID) 
 			if err != nil {
 				log.Printf("[ERROR] Error in sending push notification: %v", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

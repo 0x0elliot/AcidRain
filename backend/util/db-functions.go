@@ -47,6 +47,16 @@ func GetShops(ownerID string) ([]models.Shop, error) {
 	return shops, nil
 }
 
+func GetShopFromShopIdentifier(shopIdentifier string) (*models.Shop, error) {
+	shop := new(models.Shop)
+	txn := db.DB.Where("shop_identifier = ?", shopIdentifier).First(shop)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting shop: %v", txn.Error)
+		return shop, txn.Error
+	}
+	return shop, nil
+}
+
 func GetPosts(ownerID string) ([]models.Post, error) {
 	posts := []models.Post{}
 	txn := db.DB.Where("owner_id = ?", ownerID).Find(&posts)
