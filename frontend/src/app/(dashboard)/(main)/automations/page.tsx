@@ -92,7 +92,7 @@ export default function Automations() {
             </div>
             <div className="mt-2">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Add a shop to get started with WhatsApp automations.
+                Add a shop to get started with your automations.
               </p>
             </div>
             <div className="mt-4">

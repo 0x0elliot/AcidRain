@@ -4,6 +4,7 @@ import (
 	"go-authentication-boilerplate/models"
 	"log"
 	"os"
+	"encoding/json"
 
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
@@ -40,7 +41,14 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 	return nil
 }
 
-func SendPushNotification(message string, subscriptionId string) error {
+func SendPushNotification(title string, message string, icon string, url string, subscriptionId string) error {
+	type PushNotificationRequest struct {
+		Body string `json:"body"`
+		Title string `json:"title"`
+		Icon string `json:"icon"`
+		URL string `json:"url"`
+	}
+
 	publicKey := os.Getenv("ACIDRAIN_WEB_PUSH_PUBLIC_KEY")
 	privateKey := os.Getenv("ACIDRAIN_WEB_PUSH_PRIVATE_KEY")
 
@@ -58,12 +66,30 @@ func SendPushNotification(message string, subscriptionId string) error {
 		},
 	}
 
-	_, err = webpush.SendNotification([]byte(message), &pushSubscription, &webpush.Options{
-		Subscriber:      "You're subscribed to AcidRain",
+	totalMessageStruct := PushNotificationRequest{
+		Body: message,
+		Title: title,
+		Icon: icon,
+		URL: url,
+	}
+
+	// make sure to convert the struct to a JSON string
+	jsonData, err := json.Marshal(totalMessageStruct)
+	if err != nil {
+		log.Printf("[ERROR] Error marshalling message: %v", err)
+		return err
+	}
+
+	totalMessage := string(jsonData)
+
+	notif, err := webpush.SendNotification([]byte(totalMessage), &pushSubscription, &webpush.Options{
+		Subscriber:      "",
 		VAPIDPublicKey: publicKey,
 		VAPIDPrivateKey: privateKey,
 		TTL:             30,
 	}) 
+
+	log.Printf("[INFO] Notification: %v", notif)
 
 	if err != nil {
 		log.Printf("[ERROR] Error sending push notification: %v", err)

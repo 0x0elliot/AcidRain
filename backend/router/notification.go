@@ -63,6 +63,7 @@ func HandlePushNotification(c *fiber.Ctx) error {
 	type PushNotificationRequest struct {
 		Test bool `json:"test"`
 		Body string `json:"body"`
+		Title string `json:"title"`
 	}
 
 	var req PushNotificationRequest
@@ -75,6 +76,7 @@ func HandlePushNotification(c *fiber.Ctx) error {
 	}
 
 	if req.Test {
+		log.Printf("[INFO] Test push notification requested")
 		subscriptions, err := util.GetNoficationSubscriptionByOwnerId(c.Locals("id").(string))
 		if err != nil {
 			log.Printf("[ERROR] Error getting subscriptions: %v", err)
@@ -91,8 +93,13 @@ func HandlePushNotification(c *fiber.Ctx) error {
 			})
 		}
 
+		examplePic := "https://upload.wikimedia.org/wikipedia/en/a/a9/Example.jpg"
+
 		for _, subscription := range subscriptions {
-			err := util.SendPushNotification(req.Body, subscription.ID)
+			req.Body = "Test push notification"
+			req.Title = "You're now subscribed!"
+			// err := util.SendPushNotification(req.Title, req.Body, subscription.ID)
+			err := util.SendPushNotification(req.Title, req.Body, examplePic, "http://localhost:3000", subscription.ID) 
 			if err != nil {
 				log.Printf("[ERROR] Error in sending push notification: %v", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -108,15 +115,15 @@ func HandlePushNotification(c *fiber.Ctx) error {
 		})
 	}
 
-	// send push notification
-	err := util.SendPushNotification(req.Body, c.Locals("id").(string))
-	if err != nil {
-		log.Printf("[ERROR] Error in sending push notification: %v", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error sending push notification",
-		})
-	}
+	// // send push notification
+	// err := util.SendPushNotification(req.Title, req.Body, c.Locals("id").(string))
+	// if err != nil {
+	// 	log.Printf("[ERROR] Error in sending push notification: %v", err)
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	// 		"error": true,
+	// 		"message":   "Error sending push notification",
+	// 	})
+	// }
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error": false,
