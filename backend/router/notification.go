@@ -6,7 +6,7 @@ import (
 	models "go-authentication-boilerplate/models"
 
 	"log"
-	"strings"
+	// "strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -32,7 +32,12 @@ type SubscribeToPushRequest struct {
 }
 
 func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
-	var req SubscribeToPushRequest
+	type PublicSubscribeToPushRequest struct {
+		Subscription SubscribeToPushRequest `json:"subscription"`
+		StoreUrl string `json:"storeUrl"`
+	}
+
+	var req PublicSubscribeToPushRequest
 	if err := c.BodyParser(&req); err != nil {
 		log.Printf("[ERROR] Error in parsing request body: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -41,23 +46,7 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 		})
 	}
 
-	// get the "Referrer" header from the request
-	referrer := c.Get("Referrer")
-	if referrer == "" {
-		log.Printf("[ERROR] Referrer header not found")
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Unable to determine shop",
-		})
-	}
-
-	// strip the protocol and just get the domain
-	shopIdentifier := strings.Replace(referrer, "https://", "", 1)
-	if strings.Contains(shopIdentifier, "/") {
-		shopIdentifier = strings.Split(shopIdentifier, "/")[0]
-	}
-
-	shop, err := util.GetShopFromShopIdentifier(shopIdentifier)
+	shop, err := util.GetShopFromShopIdentifier(req.StoreUrl)
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -67,9 +56,9 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	}
 
 	var subscription models.NotificationSubscription
-	subscription.Endpoint = req.Endpoint
-	subscription.Auth = req.Keys.Auth
-	subscription.P256dh = req.Keys.P256dh
+	subscription.Endpoint = req.Subscription.Endpoint
+	subscription.Auth = req.Subscription.Keys.Auth
+	subscription.P256dh = req.Subscription.Keys.P256dh
 	subscription.OwnerID = shop.OwnerID
 
 	// subscribe user to push

@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   
           // Check if the user is already subscribed
           registration.pushManager.getSubscription()
-            .then(function (subscription) {
+            .then(async function (subscription) {
               if (subscription) {
                 console.log('Already subscribed:', subscription);
                 // You can skip asking for permission if already subscribed
@@ -53,21 +53,20 @@ document.addEventListener('DOMContentLoaded', function () {
       return response.json();
     }).then(function (data) {
       applicationServerKey = urlB64ToUint8Array(data.publicKey);
+      registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: applicationServerKey
+      })
+      .then(function (subscription) {
+        console.log('User is subscribed:', subscription);
+        sendSubscriptionToServer(subscription);
+        requestTestNotification(subscription);
+      })
+      .catch(function (error) {
+        console.error('Failed to subscribe the user:', error);
+      });
     }).catch(function (error) {
       console.error('Error getting public key from server:', error);
-    });
-
-    registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: applicationServerKey
-    })
-    .then(function (subscription) {
-      console.log('User is subscribed:', subscription);
-      sendSubscriptionToServer(subscription);
-      requestTestNotification(subscription);
-    })
-    .catch(function (error) {
-      console.error('Failed to subscribe the user:', error);
     });
   }
   
@@ -87,6 +86,13 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function sendSubscriptionToServer(subscription) {
+    let storeUrl;
+    if (window.Shopify) {
+      storeUrl = window.Shopify.shop;
+    }
+
+    subscription.storeUrl = storeUrl;
+
     fetch('apps/acidrain/api/notification/subscribe', {
       method: 'POST',
       headers: {
