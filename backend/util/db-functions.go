@@ -67,6 +67,22 @@ func GetShopFromShopIdentifier(shopIdentifier string) (*models.Shop, error) {
 	return shop, nil
 }
 
+func GetStoreNotifications(shopId, notificationType string) ([]models.Notification, error) {	
+	notifications := []models.Notification{}
+	query := db.DB.Where("shop_id = ? AND notification_type = ?", shopId, notificationType)
+
+	if notificationType == "*" {
+		query = db.DB.Where("shop_id = ?", shopId)
+	}
+
+	txn := query.Find(&notifications)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting notifications: %v", txn.Error)
+		return notifications, txn.Error
+	}
+	return notifications, nil
+}
+
 func GetPosts(ownerID string) ([]models.Post, error) {
 	posts := []models.Post{}
 	txn := db.DB.Where("owner_id = ?", ownerID).Find(&posts)
@@ -85,6 +101,28 @@ func GetPost(id string) (*models.Post, error) {
 		return post, txn.Error
 	}
 	return post, nil
+}
+
+func SetNotification(notification *models.Notification) (*models.Notification, error) {
+	// check if notification with ID exists
+	if notification.ID == "" {
+		notification.CreatedAt = db.DB.NowFunc().String()
+		notification.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Create(notification)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error creating notification: %v", txn.Error)
+			return notification, txn.Error
+		}
+	} else {
+		notification.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Save(notification)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error saving notification: %v", txn.Error)
+			return notification, txn.Error
+		}
+	}
+
+	return notification, nil
 }
 
 func SetPost(post *models.Post) (*models.Post, error) {
@@ -149,3 +187,20 @@ func DeleteAllUserOwnedNotificationSubscriptions(ownerID string) error {
 	log.Printf("[INFO] Rows affected: %d", txn.RowsAffected)
 	return nil
 }
+
+func DeleteNotification(notification *models.Notification) error {
+	// Enable GORM debug mode for detailed logs
+	db.DB = db.DB.Debug()
+
+	// Perform the delete operation
+	txn := db.DB.Delete(notification)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error deleting notification: %v", txn.Error)
+		return txn.Error
+	}
+
+	// Log the number of rows affected
+	log.Printf("[INFO] Rows affected: %d", txn.RowsAffected)
+	return nil
+}
+

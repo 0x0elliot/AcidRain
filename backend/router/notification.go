@@ -20,6 +20,10 @@ func SetupNotificationRoutes() {
 	privNotification.Use(auth.SecureAuth()) // middleware to secure all routes for this group
 	privNotification.Post("/push", HandlePushNotification)
 	privNotification.Post("/subscribe", HandleSubscribeToPush)
+	privNotification.Get("/notifications", HandleGetNotifications)
+
+	privNotification.Post("/enable/push-notifications", HandleEnablePushNotifications)
+	privNotification.Post("/disable/push-notifications", HandleDisablePushNotifications)
 }
 
 type SubscribeToPushRequest struct {
@@ -30,6 +34,178 @@ type SubscribeToPushRequest struct {
 		Auth string `json:"auth"`
 	} `json:"keys"`
 }
+
+func HandleGetNotifications(c *fiber.Ctx) error {
+	type GetNotificationsRequest struct {
+		ShopIdentifier string `json:"shop_identifier"`
+	}
+
+	var req GetNotificationsRequest
+	// this is a GET request, so we need to get the query params
+	req.ShopIdentifier = c.Query("shop_identifier")
+
+	shop, err := util.GetShopFromShopIdentifier(req.ShopIdentifier)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Unauthorized access")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"message":   "Unauthorized access",
+		})
+	}
+
+	notifications, err := util.GetStoreNotifications(shop.ID, "*")
+	if err != nil {
+		log.Printf("[ERROR] Error getting notifications: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting notifications",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"notifications": notifications,
+	})
+}
+
+func HandleDisablePushNotifications(c *fiber.Ctx) error {
+	type DisablePushNotificationsRequest struct {
+		ShopIdentifier string `json:"shop_identifier"`
+	}
+
+	var req DisablePushNotificationsRequest
+	if err := c.BodyParser(&req); err != nil {
+		log.Printf("[ERROR] Error in parsing request body: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error parsing request body",
+		})
+	}
+
+	shop, err := util.GetShopFromShopIdentifier(req.ShopIdentifier)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Unauthorized access")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"message":   "Unauthorized access",
+		})
+	}
+
+	notifs, err := util.GetStoreNotifications(shop.ID, "push")
+	if err != nil {
+		log.Printf("[ERROR] Error getting notifications: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting notifications",
+		})
+	}
+
+	if len(notifs) == 0 {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"error": false,
+			"message":   "Push notifications already disabled for this store",
+		})
+	}
+
+	for _, notif := range notifs {
+		err = util.DeleteNotification(&notif)
+		if err != nil {
+			log.Printf("[ERROR] Error deleting notification: %v", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": true,
+				"message":   "Error deleting notification",
+			})
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"message":   "Push notifications disabled successfully",
+	})
+}
+func HandleEnablePushNotifications(c *fiber.Ctx) error {
+	type EnablePushNotificationsRequest struct {
+		ShopIdentifier string `json:"shop_identifier"`
+	}
+
+	var req EnablePushNotificationsRequest
+	if err := c.BodyParser(&req); err != nil {
+		log.Printf("[ERROR] Error in parsing request body: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error parsing request body",
+		})
+	}
+
+	shop, err := util.GetShopFromShopIdentifier(req.ShopIdentifier)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Unauthorized access")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"message":   "Unauthorized access",
+		})
+	}
+
+	notifs, err := util.GetStoreNotifications(shop.ID, "push")
+	if err != nil {
+		log.Printf("[ERROR] Error getting notifications: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting notifications",
+		})
+	}
+
+	if len(notifs) > 0 {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"error": false,
+			"message":   "Push notifications already enabled for this store",
+		})
+	}
+
+	var notification models.Notification
+	notification.ShopID = shop.ID
+	notification.NotificationType = "push"
+	notification.Configured = false
+
+	_, err = util.SetNotification(&notification)
+	if err != nil {
+		log.Printf("[ERROR] Error setting notification: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error setting notification",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"message":   "Push notifications enabled successfully",
+	})
+}
+
 
 func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	type PublicSubscribeToPushRequest struct {
@@ -91,7 +267,7 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 		})
 	}
 
-	go func() {		
+	go func() {
 		// send push notification
 		err := util.SendPushNotification("Welcome to AcidRain", "You're now subscribed to push notifications", "https://upload.wikimedia.org/wikipedia/en/a/a9/Example.jpg", "https://upload.wikimedia.org/wikipedia/en/a/a9/Example.jpg", "http://localhost:3000", sub.ID)
 		if err != nil {

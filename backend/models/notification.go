@@ -4,7 +4,13 @@ type Notification struct {
 	Base
 	ShopID string `json:"shop_id"`
 	NotificationType string `json:"notification_type"`
-	NotificationData string `json:"notification_data"`
+	Configured bool `json:"configured"`
+}
+
+type NotificationsSent struct {
+	Base
+	NotificationID string `json:"notification_id"`
+	NotificationSubscriptionID string `json:"notification_subscription_id"`
 	NotificationStatus string `json:"notification_status"`
 }
 
@@ -15,5 +21,6 @@ type NotificationSubscription struct {
 	Auth string `json:"auth"`
 	P256dh string `json:"p256dh"`
 
-	OwnerID string `json:"owner_id"`
+	OwnerID string `json:"owner_id"` // only for test notifications
+	NotificationID string `json:"notification_id"`
 }

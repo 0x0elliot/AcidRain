@@ -45,6 +45,8 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 	return sub, nil
 }
 
+
+// ideally, all "url" should be an analytics redirect URL from our end
 func SendPushNotification(title string, message string, icon string, badge string, url string, subscriptionId string) error {
 	type PushNotificationRequest struct {
 		Body string `json:"body"`

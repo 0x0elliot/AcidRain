@@ -1,7 +1,12 @@
 // this file will eventually belong in a CDN
 document.addEventListener('DOMContentLoaded', function () {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
-      navigator.serviceWorker.register('/apps/acidrain/public/service-worker.js')
+      let baseUrl = window.location.origin;
+      if (window.Shopify) {
+        baseUrl = "https://" + window.Shopify.shop;
+      }
+
+      navigator.serviceWorker.register(`${baseUrl}/apps/acidrain/public/service-worker.js`)
         .then(function (registration) {
           console.log('Service Worker registered with scope:', registration.scope);
   
@@ -10,8 +15,14 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(async function (subscription) {
               if (subscription) {
                 console.log('Already subscribed:', subscription);
-                // You can skip asking for permission if already subscribed
-                sendSubscriptionToServer(subscription);
+
+                  // check local storage for subscription to avoid spam
+                  if (localStorage.getItem('acidRainWebPush') === '1') {
+                    console.log('Already subscribed:', subscription);
+                    return;
+                  }
+
+                  sendSubscriptionToServer(subscription);
               } else {
                 askForNotificationPermission(registration);
               }
@@ -94,7 +105,12 @@ document.addEventListener('DOMContentLoaded', function () {
       storeUrl: storeUrl
     };
 
-    fetch('apps/acidrain/api/notification/subscribe', {
+    let baseUrl = window.location.origin;
+    if (window.Shopify) {
+      baseUrl = "https://" + window.Shopify.shop;
+    }
+
+    fetch(`${baseUrl}apps/acidrain/api/notification/subscribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -108,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return response.json();
     })
     .then(function (data) {
+      localStorage.setItem('acidRainWebPush', '1');
       console.log('Subscription sent to server:', data);
     })
     .catch(function (error) {
