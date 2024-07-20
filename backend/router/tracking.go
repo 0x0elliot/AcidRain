@@ -40,7 +40,10 @@ func HandleTrackedUserSync(c *fiber.Ctx) error {
 
 	trackedUser := new(models.TrackedUser)
 	trackedUser.FingerPrint = newFingerPrint.FingerPrint
+
+	// adjust the following to the use of pq.StringArray
 	trackedUser.ShopifyUniqueIDs = append(trackedUser.ShopifyUniqueIDs, newFingerPrint.ShopifyUniqueID)
+
 	if newFingerPrint.PushNotificationSubscription != "" {
 		trackedUser.SubscriptionMetadata = append(trackedUser.SubscriptionMetadata, newFingerPrint.PushNotificationSubscription)
 	}
