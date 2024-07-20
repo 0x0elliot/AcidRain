@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
           fingerprint: visitorId,
           store: baseUrl,
           shopify_unique_id: shopifyUniqueId,
-          push_notification_subscription: localStorage.getItem('acidRainWebPush') === '1' ? JSON.parse(localStorage.getItem('acidRainWebPushSubscription')) : {} 
+          push_notification_subscription: localStorage.getItem('acidRainWebPush') === '1' ? localStorage.getItem('acidRainWebPushSubscription') : ""
         })
       })
         .then(function (response) {

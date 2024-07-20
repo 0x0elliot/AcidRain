@@ -41,7 +41,9 @@ func HandleTrackedUserSync(c *fiber.Ctx) error {
 	trackedUser := new(models.TrackedUser)
 	trackedUser.FingerPrint = newFingerPrint.FingerPrint
 	trackedUser.ShopifyUniqueIDs = append(trackedUser.ShopifyUniqueIDs, newFingerPrint.ShopifyUniqueID)
-	trackedUser.SubscriptionMetadata = append(trackedUser.SubscriptionMetadata, newFingerPrint.PushNotificationSubscription)
+	if newFingerPrint.PushNotificationSubscription != "" {
+		trackedUser.SubscriptionMetadata = append(trackedUser.SubscriptionMetadata, newFingerPrint.PushNotificationSubscription)
+	}
 	trackedUser.Stores = append(trackedUser.Stores, newFingerPrint.Store)
 
 	trackedUserOriginal, err := util.GetTrackedUserByFingerprint(newFingerPrint.FingerPrint)
@@ -49,11 +51,15 @@ func HandleTrackedUserSync(c *fiber.Ctx) error {
 		log.Printf("[ERROR] Error getting fingerprint: %v", err)
 	} else {
 		trackedUser.ShopifyUniqueIDs = append(trackedUser.ShopifyUniqueIDs, trackedUserOriginal.ShopifyUniqueIDs...)
-		trackedUser.SubscriptionMetadata = append(trackedUser.SubscriptionMetadata, trackedUserOriginal.SubscriptionMetadata...)
+		if newFingerPrint.PushNotificationSubscription != "" {
+			trackedUser.SubscriptionMetadata = append(trackedUser.SubscriptionMetadata, trackedUserOriginal.SubscriptionMetadata...)
+		}
 		trackedUser.Stores = append(trackedUser.Stores, trackedUserOriginal.Stores...)
 
 		trackedUserOriginal.ShopifyUniqueIDs = trackedUser.ShopifyUniqueIDs
-		trackedUserOriginal.SubscriptionMetadata = trackedUser.SubscriptionMetadata
+		if newFingerPrint.PushNotificationSubscription != "" {
+			trackedUserOriginal.SubscriptionMetadata = trackedUser.SubscriptionMetadata
+		}
 		trackedUserOriginal.Stores = trackedUser.Stores
 
 		trackedUser = trackedUserOriginal
