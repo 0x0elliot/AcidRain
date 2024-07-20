@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
       baseUrl = "https://" + window.Shopify.shop;
     }
   }
-
   if ('serviceWorker' in navigator && 'PushManager' in window) {
     navigator.serviceWorker.register(`${baseUrl}/apps/acidrain/public/service-worker.js`)
       .then(function (registration) {
@@ -99,9 +98,14 @@ function askForNotificationPermission(registration) {
 
 function subscribeUserToPush(registration) {
   let applicationServerKey;
+  let storeUrl;
+  if (window.Shopify) {
+    storeUrl = window.Shopify.shop;
+  }
+
 
   // get public key from the server
-  fetch('/apps/acidrain/api/web-push-public-key', {
+  fetch(`${storeUrl}/apps/acidrain/api/web-push-public-key`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
@@ -160,7 +164,7 @@ function sendSubscriptionToServer(subscription) {
     baseUrl = "https://" + window.Shopify.shop;
   }
 
-  fetch(`${baseUrl}apps/acidrain/api/notification/subscribe`, {
+  fetch(`${baseUrl}/apps/acidrain/api/notification/subscribe`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
