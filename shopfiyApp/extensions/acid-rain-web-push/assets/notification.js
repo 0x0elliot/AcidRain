@@ -99,10 +99,10 @@ function askForNotificationPermission(registration) {
 function subscribeUserToPush(registration) {
   let applicationServerKey;
   let storeUrl;
+  storeUrl = window.location.origin;
   if (window.Shopify) {
-    storeUrl = window.Shopify.shop;
+    storeUrl = "https://" + window.Shopify.shop;
   }
-
 
   // get public key from the server
   fetch(`${storeUrl}/apps/acidrain/api/web-push-public-key`, {
@@ -150,10 +150,6 @@ function urlB64ToUint8Array(base64String) {
 
 function sendSubscriptionToServer(subscription) {
   let storeUrl;
-  if (window.Shopify) {
-    storeUrl = window.Shopify.shop;
-  }
-
   requestObj = {
     subscription: subscription,
     storeUrl: storeUrl

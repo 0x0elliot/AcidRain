@@ -28,6 +28,6 @@ api_version = "2024-07"
 embedded = false
 
 [app_proxy]
-url = "https://3a36-2405-201-4019-f142-899d-5a71-8206-a792.ngrok-free.app"
+url = "https://3008-2405-201-4019-f142-899d-5a71-8206-a792.ngrok-free.app"
 subpath = "acidrain"
 prefix = "apps"
