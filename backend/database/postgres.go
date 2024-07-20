@@ -72,6 +72,6 @@ func ConnectToDB() {
 		&models.Shop{},
 		&models.Notification{},
 		&models.NotificationSubscription{},
+		&models.TrackedUser{},
 	)
-
 }

@@ -99,7 +99,7 @@ export default function WebPushNotificationThemeSettings(props) {
                     </p>
 
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                        just click on the "Configure" button to re-enable the extension.
+                        just click on the above button to re-enable the extension.
                     </p>
                 </div>
             </div>

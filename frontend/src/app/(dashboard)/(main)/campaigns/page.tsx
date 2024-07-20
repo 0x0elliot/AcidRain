@@ -5,6 +5,7 @@ import { siteConfig } from "@/app/siteConfig";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import WebPushNotificationsCampaignSettings from "@/components/WebPushNotificationsCampaignSettings"
 import WebPushNotificationThemeSettings from "@/components/WebPushNotificationThemeSettings"
+import QuickWebPushCampaign from "@/components/QuickWebPushCampaign"
 
 import cookies from 'nookies';
 
@@ -75,9 +76,10 @@ export default function Campaigns() {
                                 Try out {type} campaigns for your shop.
                             </p>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                                 {type === "Push" && <WebPushNotificationsCampaignSettings />}
                                 {type === "Push" && <WebPushNotificationThemeSettings storeName={shops[0]?.shop_identifier} />}
+                                {type == "Push" && <QuickWebPushCampaign />}
                             </div>
                         </div>
                     </TabsContent>

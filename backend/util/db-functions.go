@@ -147,6 +147,39 @@ func SetPost(post *models.Post) (*models.Post, error) {
 	return post, nil
 }
 
+func GetTrackedUserByFingerprint(fingerprint string) (*models.TrackedUser, error) {
+	trackedUser := new(models.TrackedUser)
+	txn := db.DB.Where("fingerprint = ?", fingerprint).First(&trackedUser)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting tracked user: %v", txn.Error)
+		return trackedUser, txn.Error
+	}
+	return trackedUser, nil
+}
+
+func SetTrackedUser(trackedUser *models.TrackedUser) (*models.TrackedUser, error) {
+	// check if tracked user with ID exists
+	if trackedUser.ID == "" {
+		// check if user with fingerprint exists
+		trackedUser.CreatedAt = db.DB.NowFunc().String()
+		trackedUser.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Create(trackedUser)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error creating tracked user: %v", txn.Error)
+			return trackedUser, txn.Error
+		}
+	} else {
+		trackedUser.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Save(trackedUser)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error saving tracked user: %v", txn.Error)
+			return trackedUser, txn.Error
+		}
+	}
+
+	return trackedUser, nil
+}
+
 func SetNotficationSubscription(subscription models.NotificationSubscription) (models.NotificationSubscription, error) {
 	// check if subscription with ID exists
 	if subscription.ID == "" {

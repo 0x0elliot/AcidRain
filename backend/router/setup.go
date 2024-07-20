@@ -10,6 +10,7 @@ var USER fiber.Router
 var POST fiber.Router
 var SHOP fiber.Router
 var NOTIFICATION fiber.Router
+var TRACKING fiber.Router
 
 func webPushPublicKey() string {
 	return "BCv7WgVIIGsZfgamKaruQEach2j6a8Us5en7Y2FIuC7PUt9aQxd2Nl2d5XIj80cfgs37DA6OE3TS1GOebJs0UTo"
@@ -51,4 +52,7 @@ func SetupRoutes(app *fiber.App) {
 
 	NOTIFICATION = api.Group("/notification")
 	SetupNotificationRoutes()
+
+	TRACKING = api.Group("/tracking")
+	SetupTrackingRoutes()
 }
