@@ -12,7 +12,7 @@ include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_products,write_products"
+scopes = "read_products,write_products,read_customers"
 
 [auth]
 redirect_urls = [
@@ -24,10 +24,10 @@ redirect_urls = [
 [webhooks]
 api_version = "2024-07"
 
-[pos]
-embedded = false
-
 [app_proxy]
-url = "https://3008-2405-201-4019-f142-899d-5a71-8206-a792.ngrok-free.app"
+url = "https://8fa6-2405-201-4019-f142-c143-77b1-c9cd-661c.ngrok-free.app"
 subpath = "acidrain"
 prefix = "apps"
+
+[pos]
+embedded = false
