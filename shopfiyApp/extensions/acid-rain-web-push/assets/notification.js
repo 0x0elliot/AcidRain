@@ -1,6 +1,10 @@
 // this file will eventually belong in a CDN
 document.addEventListener('DOMContentLoaded', function () {
   let baseUrl = window.location.origin;
+  const scriptTag = document.querySelector('script[src*="notification.js"]');
+  const customerData = scriptTag.getAttribute('data-customer');
+
+  console.log('Customer data:', customerData);
 
   if ('serviceWorker' in navigator && 'PushManager' in window) {
     navigator.serviceWorker.register(`${baseUrl}/apps/acidrain/public/service-worker.js`)
@@ -12,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(async function (subscription) {
             if (subscription) {
               console.log('Already subscribed:', subscription);
-
               // check local storage for subscription to avoid spam
               if (localStorage.getItem('acidRainWebPush') === '1') {
                 console.log('Already subscribed:', subscription);
@@ -31,54 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
   } else {
     console.warn('Push messaging is not supported');
   }
-
-  // tracking
-  // const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4')
-  const fpPromise = import(`${baseUrl}/apps/acidrain/public/fingerprint.js`)
-    .then(FingerprintJS => FingerprintJS.load())
-  // Get the visitor identifier when you need it.
-  fpPromise
-    .then(fp => fp.get())
-    .then(result => {
-      // This is the visitor identifier:
-      const visitorId = result.visitorId
-      var shopifyUniqueId;
-      localStorage.setItem('acidRainVisitorId', visitorId);
-
-      try {
-        shopifyUniqueId = window.ShopifyAnalytics.lib.user().traits().uniqToken;
-      } catch (error) {
-        console.error('Error getting shopify unique id:', error);
-      }
-
-      // sync visitor it all with the server
-      fetch(`${baseUrl}/apps/acidrain/api/tracking/sync`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          fingerprint: visitorId,
-          store: baseUrl,
-          shopify_unique_id: shopifyUniqueId,
-          push_notification_subscription: localStorage.getItem('acidRainWebPush') === '1' ? localStorage.getItem('acidRainWebPushSubscription') : ""
-        })
-      })
-        .then(function (response) {
-          if (!response.ok) {
-            throw new Error('Failed to sync visitor with server');
-          }
-          return response.json();
-        })
-        .then(function (data) {
-          console.log('Visitor synced with server:', data);
-        })
-        .catch(function (error) {
-          console.error('Error syncing visitor with server:', error);
-        });
-
-    })
-
 });
 
 function askForNotificationPermission(registration) {
