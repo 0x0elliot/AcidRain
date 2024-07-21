@@ -1,11 +1,7 @@
 // this file will eventually belong in a CDN
 document.addEventListener('DOMContentLoaded', function () {
   let baseUrl = window.location.origin;
-  if (window.Shopify) {
-    if (window.Shopify.shop) {
-      baseUrl = "https://" + window.Shopify.shop;
-    }
-  }
+
   if ('serviceWorker' in navigator && 'PushManager' in window) {
     navigator.serviceWorker.register(`${baseUrl}/apps/acidrain/public/service-worker.js`)
       .then(function (registration) {
@@ -100,9 +96,6 @@ function subscribeUserToPush(registration) {
   let applicationServerKey;
   let storeUrl;
   storeUrl = window.location.origin;
-  if (window.Shopify) {
-    storeUrl = "https://" + window.Shopify.shop;
-  }
 
   // get public key from the server
   fetch(`${storeUrl}/apps/acidrain/api/web-push-public-key`, {
@@ -150,16 +143,18 @@ function urlB64ToUint8Array(base64String) {
 
 function sendSubscriptionToServer(subscription) {
   let storeUrl;
+  if (window.Shopify) {
+    storeUrl = window.Shopify.shop;
+  } else {
+    storeUrl = window.location.origin;
+  }
+
   requestObj = {
     subscription: subscription,
     storeUrl: storeUrl
   };
 
   let baseUrl = window.location.origin;
-  if (window.Shopify) {
-    baseUrl = "https://" + window.Shopify.shop;
-  }
-
   fetch(`${baseUrl}/apps/acidrain/api/notification/subscribe`, {
     method: 'POST',
     headers: {
