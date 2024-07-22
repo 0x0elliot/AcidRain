@@ -13,6 +13,7 @@ import (
 
 func SetupNotificationRoutes() {
 	NOTIFICATION.Post("/subscribe", HandlePublicSubscribeToPush)
+	NOTIFICATION.Post("/sync", HandlePublicSync)
 
 	// set up
 	privNotification := NOTIFICATION.Group("/private")
@@ -33,6 +34,80 @@ type SubscribeToPushRequest struct {
 		P256dh string `json:"p256dh"`
 		Auth string `json:"auth"`
 	} `json:"keys"`
+}
+
+func HandlePublicSync(c *fiber.Ctx) error {
+	type PublicSyncRequest struct {
+		Subscription SubscribeToPushRequest `json:"subscription"`
+		StoreUrl string `json:"storeUrl"`
+		Cid int `json:"cid"`
+	}
+
+	var req PublicSyncRequest
+	if err := c.BodyParser(&req); err != nil {
+		log.Printf("[ERROR] Error in parsing request body: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error parsing request body",
+		})
+	}
+
+	shop, err := util.GetShopFromShopIdentifier(req.StoreUrl)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting shop",
+		})
+	}
+
+	// get existing subscription
+	subscription, err := util.GetSubscriptionFromEndpoint(req.Subscription.Endpoint)
+	if err != nil {
+		log.Printf("[ERROR] Error getting subscription: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting subscription",
+		})
+	}
+
+	if subscription.OwnerID != shop.OwnerID {
+		log.Printf("[ERROR] Unauthorized access")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"message":   "Unauthorized access",
+		})
+	}
+
+	// update subscription
+	subscription.Auth = req.Subscription.Keys.Auth
+	subscription.P256dh = req.Subscription.Keys.P256dh
+
+	sub, err := util.SetNotficationSubscription(*subscription)
+	if err != nil {
+		log.Printf("[ERROR] Error setting subscription: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error setting subscription",
+		})
+	}
+
+	existingCustomerIds := sub.CustomerIDs
+	if !util.ContainsInt64(existingCustomerIds, int64(req.Cid)) {
+		err := util.AppendCustomerIDToSubscription(&sub, int64(req.Cid))
+		if err != nil {
+			log.Printf("[ERROR] Error appending customer id to subscription: %v", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": true,
+				"message":   "Error appending customer id to subscription",
+			})
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"message":   "Subscription updated successfully",
+	})
 }
 
 func HandleGetNotifications(c *fiber.Ctx) error {

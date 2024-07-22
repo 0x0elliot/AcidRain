@@ -1,9 +1,11 @@
 package util
 
 import (
-	"log"
 	db "go-authentication-boilerplate/database"
 	models "go-authentication-boilerplate/models"
+	"log"
+
+	"gorm.io/gorm"
 )
 
 func GetUserById(id string) (*models.User, error) {
@@ -50,6 +52,16 @@ func GetShops(ownerID string) ([]models.Shop, error) {
 func GetIdenticalSubscription(subscription models.NotificationSubscription) (*models.NotificationSubscription, error) {
 	sub := new(models.NotificationSubscription)
 	txn := db.DB.Where("endpoint = ? AND auth = ? AND p256dh = ?", subscription.Endpoint, subscription.Auth, subscription.P256dh).First(sub)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting subscription: %v", txn.Error)
+		return sub, txn.Error
+	}
+	return sub, nil
+}
+
+func GetSubscriptionFromEndpoint(endpoint string) (*models.NotificationSubscription, error) {
+	sub := new(models.NotificationSubscription)
+	txn := db.DB.Where("endpoint = ?", endpoint).First(sub)
 	if txn.Error != nil {
 		log.Printf("[ERROR] Error getting subscription: %v", txn.Error)
 		return sub, txn.Error
@@ -155,6 +167,19 @@ func GetTrackedUserByFingerprint(fingerprint string) (*models.TrackedUser, error
 		return trackedUser, txn.Error
 	}
 	return trackedUser, nil
+}
+
+func AppendCustomerIDToSubscription(subscription *models.NotificationSubscription, customerID int64) (error) {
+	// remember, subscription.CustomerIDs is a pg.Int64Array
+	return db.DB.Model(
+		&subscription,
+	).Where(
+		"id = ?",
+		subscription.ID,
+	).Update(
+		"customer_ids",
+		gorm.Expr("array_append(customer_ids, ?)", customerID),
+	).Error
 }
 
 func SetTrackedUser(trackedUser *models.TrackedUser) (*models.TrackedUser, error) {

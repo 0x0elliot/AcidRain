@@ -1,5 +1,9 @@
 package models
 
+import (
+	pg "github.com/go-pg/pg/v10"
+)
+
 // i think the table below is a waste of space
 // and time. keeping it around for now. unnecessary complexity
 type Notification struct {
@@ -25,7 +29,12 @@ type NotificationSubscription struct {
 	Auth string `json:"auth" gorm:"null"`
 	P256dh string `json:"p256dh" gorm:"null"`
 
+	// this will become the shopify shop id soon
 	OwnerID string `json:"owner_id"` // only for test notifications
+
+	CustomerIDs pg.IntSlice `json:"customer_ids" gorm:"type:int[]"`
+	
+	// might retire these soon
 	NotificationID string `json:"notification_id"`
 	ShopifyUniqueID string `json:"shopify_unique_id"`
 }

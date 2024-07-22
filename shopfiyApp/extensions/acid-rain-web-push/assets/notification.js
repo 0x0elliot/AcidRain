@@ -1,3 +1,52 @@
+class Observable {
+  constructor() {
+      this.observers = [];
+  }
+
+  subscribe(fn) {
+      this.observers.push(fn);
+  }
+
+  unsubscribe(fn) {
+      this.observers = this.observers.filter(observer => observer !== fn);
+  }
+
+  notify(data) {
+      this.observers.forEach(observer => observer(data));
+  }
+}
+
+// Create an observable for __st.cid
+const cidObservable = new Observable();
+
+// Set up the watcher
+if (window.__st) {
+  let currentCid = window.__st.cid;
+  Object.defineProperty(window.__st, 'cid', {
+      get: function() {
+          return currentCid;
+      },
+      set: function(newValue) {
+          if (newValue !== currentCid) {
+              currentCid = newValue;
+              cidObservable.notify(newValue);
+          }
+      }
+  });
+}
+
+// Now you can "listen" for changes like this:
+cidObservable.subscribe((newCid) => {
+  if (newCid) {
+    navigator.pushManager.getSubscription()
+      .then(function (subscription) {
+        if (subscription) {
+          syncSubscriptionOnServer(subscription, { cid: newCid });
+        }
+      });
+  }
+});
+
 // this file will eventually belong in a CDN
 document.addEventListener('DOMContentLoaded', function () {
   let baseUrl = window.location.origin;
@@ -79,6 +128,46 @@ function subscribeUserToPush(registration) {
   }).catch(function (error) {
     console.error('Error getting public key from server:', error);
   });
+}
+
+function syncSubscriptionOnServer(subscription, customer) {
+  let storeUrl;
+  if (window.Shopify) {
+    storeUrl = window.Shopify.shop;
+  } else {
+    // not ideal
+    storeUrl = window.location.origin;
+  }
+
+  requestObj = {
+    subscription: subscription,
+    storeUrl: storeUrl,
+    customer: {
+      cid: customer.cid
+    }
+  };
+
+  let baseUrl = window.location.origin;
+  fetch(`${baseUrl}/apps/acidrain/api/notification/sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestObj)
+  })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('Failed to sync subscription on server');
+      }
+      return response.json();
+    })
+    .then(function (data) {
+      console.log('Subscription synced on server:', data);
+    })
+    .catch(function (error) {
+      console.error('Error syncing subscription on server:', error);
+    });
+
 }
 
 function urlB64ToUint8Array(base64String) {
