@@ -1,9 +1,10 @@
 package router
 
 import (
-	util "go-authentication-boilerplate/util"
+	"fmt"
 	auth "go-authentication-boilerplate/auth"
 	models "go-authentication-boilerplate/models"
+	util "go-authentication-boilerplate/util"
 
 	"log"
 	// "strings"
@@ -40,7 +41,7 @@ func HandlePublicSync(c *fiber.Ctx) error {
 	type PublicSyncRequest struct {
 		Subscription SubscribeToPushRequest `json:"subscription"`
 		StoreUrl string `json:"storeUrl"`
-		Cid int `json:"cid"`
+		Cid int64 `json:"cid"`
 	}
 
 	var req PublicSyncRequest
@@ -93,8 +94,8 @@ func HandlePublicSync(c *fiber.Ctx) error {
 	}
 
 	existingCustomerIds := sub.CustomerIDs
-	if !util.ContainsInt64(existingCustomerIds, int64(req.Cid)) {
-		err := util.AppendCustomerIDToSubscription(&sub, int64(req.Cid))
+	if !util.Contains(existingCustomerIds, fmt.Sprint(req.Cid)) {
+		err := util.AppendCustomerIDToSubscription(&sub, fmt.Sprint(req.Cid))
 		if err != nil {
 			log.Printf("[ERROR] Error appending customer id to subscription: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -287,7 +288,7 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 		Subscription SubscribeToPushRequest `json:"subscription"`
 		StoreUrl string `json:"storeUrl"`
 		Customer struct {
-			Cid int `json:"cid"`
+			Cid int64 `json:"cid"`
 		} `json:"customer"`
 	}
 
@@ -344,8 +345,9 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 			"message":   "Error subscribing user to push",
 		})
 	} else {
-		if string(req.Customer.Cid) != "" {
-			err := util.AppendCustomerIDToSubscription(&subscription, int64(req.Customer.Cid))
+		customerCidStr := fmt.Sprint(req.Customer.Cid)
+		if customerCidStr != "0" {
+			err := util.AppendCustomerIDToSubscription(&sub, customerCidStr)
 			if err != nil {
 				log.Printf("[ERROR] Error appending customer id to subscription: %v", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

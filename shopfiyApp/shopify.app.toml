@@ -1,8 +1,8 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "199b65fbc8cc99165515cfbc9c992f19"
-name = "acid-rain-automaions"
-handle = "acid-rain-whatsapp-automation"
+name = "zappush"
+handle = "zappush"
 application_url = "https://localhost:3000/"
 embedded = false
 

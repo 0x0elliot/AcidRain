@@ -32,7 +32,7 @@ type NotificationSubscription struct {
 	// this will become the shopify shop id soon
 	OwnerID string `json:"owner_id"` // only for test notifications
 
-	CustomerIDs pg.Int64Array `json:"customer_ids" gorm:"type:integer[]"`
+	CustomerIDs pg.StringArray `json:"customer_ids" gorm:"type:text[]"`
 	
 	// might retire these soon
 	NotificationID string `json:"notification_id"`

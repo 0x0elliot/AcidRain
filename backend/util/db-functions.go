@@ -169,7 +169,7 @@ func GetTrackedUserByFingerprint(fingerprint string) (*models.TrackedUser, error
 	return trackedUser, nil
 }
 
-func AppendCustomerIDToSubscription(subscription *models.NotificationSubscription, customerID int64) (error) {
+func AppendCustomerIDToSubscription(subscription *models.NotificationSubscription, customerID string) (error) {
 	// remember, subscription.CustomerIDs is a pg.Int64Array
 	return db.DB.Model(
 		&subscription,

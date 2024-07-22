@@ -50,10 +50,6 @@ cidObservable.subscribe((newCid) => {
 // this file will eventually belong in a CDN
 document.addEventListener('DOMContentLoaded', function () {
   let baseUrl = window.location.origin;
-  const scriptTag = document.querySelector('script[src*="notification.js"]');
-  const customerData = scriptTag.getAttribute('data-customer');
-
-  console.log('Customer data:', customerData);
 
   if ('serviceWorker' in navigator && 'PushManager' in window) {
     navigator.serviceWorker.register(`${baseUrl}/apps/acidrain/public/service-worker.js`)
@@ -66,12 +62,10 @@ document.addEventListener('DOMContentLoaded', function () {
             if (subscription) {
               console.log('Already subscribed:', subscription);
               // check local storage for subscription to avoid spam
-              if (localStorage.getItem('acidRainWebPush') === '1') {
-                console.log('Already subscribed:', subscription);
-                return;
-              }
-
-              sendSubscriptionToServer(subscription);
+              // if (localStorage.getItem('acidRainWebPush') === '1') {
+              //   console.log('Already subscribed:', subscription);
+              //   return;
+              // }
             } else {
               askForNotificationPermission(registration);
             }
@@ -199,12 +193,6 @@ function sendSubscriptionToServer(subscription) {
     subscription: subscription,
     storeUrl: storeUrl,
   };
-
-  if (cid) {
-    requestObj.customer = {
-      cid: cid
-    };
-  }
 
   let baseUrl = window.location.origin;
   fetch(`${baseUrl}/apps/acidrain/api/notification/subscribe`, {
