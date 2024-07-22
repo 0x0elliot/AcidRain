@@ -286,6 +286,9 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	type PublicSubscribeToPushRequest struct {
 		Subscription SubscribeToPushRequest `json:"subscription"`
 		StoreUrl string `json:"storeUrl"`
+		Customer struct {
+			Cid int `json:"cid"`
+		} `json:"customer"`
 	}
 
 	var req PublicSubscribeToPushRequest
@@ -340,6 +343,17 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 			"error": true,
 			"message":   "Error subscribing user to push",
 		})
+	} else {
+		if string(req.Customer.Cid) != "" {
+			err := util.AppendCustomerIDToSubscription(&subscription, int64(req.Customer.Cid))
+			if err != nil {
+				log.Printf("[ERROR] Error appending customer id to subscription: %v", err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": true,
+					"message":   "Error appending customer id to subscription",
+				})
+			}
+		}	
 	}
 
 	go func() {

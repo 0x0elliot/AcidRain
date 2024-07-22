@@ -1,7 +1,7 @@
 package models
 
 import (
-	pg "github.com/go-pg/pg/v10"
+	pg "github.com/lib/pq"
 )
 
 // i think the table below is a waste of space
@@ -32,7 +32,7 @@ type NotificationSubscription struct {
 	// this will become the shopify shop id soon
 	OwnerID string `json:"owner_id"` // only for test notifications
 
-	CustomerIDs pg.IntSlice `json:"customer_ids" gorm:"type:int[]"`
+	CustomerIDs pg.Int64Array `json:"customer_ids" gorm:"type:integer[]"`
 	
 	// might retire these soon
 	NotificationID string `json:"notification_id"`

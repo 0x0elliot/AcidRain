@@ -14,17 +14,6 @@ func SetupTrackingRoutes() {
 	// TRACKING.Post("/sync", HandleTrackedUserSync)
 }
 
-func GetCustomerInfo(c *fiber.Ctx) error {
-	type CustomerInfo struct {
-		ShopifyUniqToken string `json:"shopify_uniq_token"`
-		ShopifyStore     string `json:"shopify_store"`
-	}
-
-	
-
-}
-
-
 // alright, GDPR will try to fuck me in the ass. 
 // let's not go this route right now.
 // add as less validation here as possible by design
