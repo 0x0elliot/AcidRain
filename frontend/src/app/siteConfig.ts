@@ -1,7 +1,7 @@
 import Automations from "./(dashboard)/(main)/automations/page"
 
 export const siteConfig = {
-  name: "AcidRain",
+  name: "zappush",
   url: "https://dashboard.tremor.so",
   description: "The only dashboard you will ever need.",
   baseLinks: {

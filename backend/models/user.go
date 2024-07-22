@@ -9,6 +9,8 @@ import (
 type User struct {
 	Base
 	Email	string `json:"email" gorm:"unique;not null"`
+	CurrentShopID string `json:"current_shop_id"`
+	CurrentShop Shop `json:"current_shop" gorm:"foreignKey:CurrentShopID;references:ID"`
 }
 
 // UserErrors represent the error format for user routes

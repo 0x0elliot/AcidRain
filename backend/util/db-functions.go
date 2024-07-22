@@ -205,6 +205,28 @@ func SetTrackedUser(trackedUser *models.TrackedUser) (*models.TrackedUser, error
 	return trackedUser, nil
 }
 
+func SetUser(user *models.User) (*models.User, error) {
+	// check if user with ID exists
+	if user.ID == "" {
+		user.CreatedAt = db.DB.NowFunc().String()
+		user.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Create(user)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error creating user: %v", txn.Error)
+			return user, txn.Error
+		}
+	} else {
+		user.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Save(user)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error saving user: %v", txn.Error)
+			return user, txn.Error
+		}
+	}
+
+	return user, nil
+}
+
 func SetNotficationSubscription(subscription models.NotificationSubscription) (models.NotificationSubscription, error) {
 	// check if subscription with ID exists
 	if subscription.ID == "" {

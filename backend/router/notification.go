@@ -26,6 +26,8 @@ func SetupNotificationRoutes() {
 
 	privNotification.Post("/enable/push-notifications", HandleEnablePushNotifications)
 	privNotification.Post("/disable/push-notifications", HandleDisablePushNotifications)
+
+	privNotification.Get("/push-subscribers", HandleGetPushSubscribers)
 }
 
 type SubscribeToPushRequest struct {
@@ -149,6 +151,47 @@ func HandleGetNotifications(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error": false,
 		"notifications": notifications,
+	})
+}
+
+func HandleGetPushSubscribers(c *fiber.Ctx) error {
+	type GetPushSubscribersRequest struct {
+		ShopIdentifier string `json:"shop_identifier"`
+	}
+
+	var req GetPushSubscribersRequest
+	// this is a GET request, so we need to get the query params
+	req.ShopIdentifier = c.Query("shop_identifier")
+
+	shop, err := util.GetShopFromShopIdentifier(req.ShopIdentifier)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Unauthorized access")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"message":   "Unauthorized access",
+		})
+	}
+
+	subscriptions, err := util.GetNoficationSubscriptionByOwnerId(shop.OwnerID)
+	if err != nil {
+		log.Printf("[ERROR] Error getting subscriptions: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting subscriptions",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"subscriptions": subscriptions,
 	})
 }
 

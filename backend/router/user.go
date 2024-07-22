@@ -4,6 +4,7 @@ import (
 	db "go-authentication-boilerplate/database"
 	"go-authentication-boilerplate/models"
 	auth "go-authentication-boilerplate/auth"
+	util "go-authentication-boilerplate/util"
 	"log"
 	"time"
 	// "golang.org/x/crypto/bcrypt"
@@ -258,6 +259,27 @@ func GetUserData(c *fiber.Ctx) error {
 	u := new(models.User)
 	if res := db.DB.Where("id = ?", id).First(&u); res.RowsAffected <= 0 {
 		return c.JSON(fiber.Map{"error": true, "message": "Cannot find the User"})
+	}
+
+	// if u.CurrentShop doesn't have a value, attach it to an existing
+	// shop owned by the user
+	if len(u.CurrentShop.ID) == 0 {
+		s := new(models.Shop)
+		if res := db.DB.Where("owner_id = ?", u.ID).First(&s); res.RowsAffected > 0 {
+			u_ := u
+			u_.CurrentShop = *s
+			u_, err := util.SetUser(u_)
+			if err != nil {
+				log.Printf("[ERROR] Couldn't set user: %v", err)
+			} else {
+				u = u_
+			}
+		}
+	}
+
+	if len(u.CurrentShop.ID) > 0 {
+		// get the shop details
+		u.CurrentShop.AccessToken = ""
 	}
 
 	return c.JSON(u)

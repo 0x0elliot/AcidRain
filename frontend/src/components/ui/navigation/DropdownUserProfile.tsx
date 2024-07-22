@@ -39,7 +39,19 @@ export function DropdownUserProfile({
   React.useEffect(() => {
     setMounted(true)
     const userInfoString = localStorage.getItem("userinfo") || "{}";
-    console.log(userInfoString);
+
+    try {
+      let jsonUserInfo = JSON.parse(userInfoString);
+
+      if (jsonUserInfo && jsonUserInfo.email) {
+        setUserInfo(jsonUserInfo);
+      } else {
+        window.location.href = "/logout";
+      }
+    } catch (e) {
+      window.location.href = "/logout";
+    }
+
     setUserInfo(JSON.parse(userInfoString));
   }, [])
 

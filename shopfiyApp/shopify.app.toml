@@ -25,7 +25,7 @@ redirect_urls = [
 api_version = "2024-07"
 
 [app_proxy]
-url = "https://8fa6-2405-201-4019-f142-c143-77b1-c9cd-661c.ngrok-free.app"
+url = "https://6bea-122-161-52-20.ngrok-free.app"
 subpath = "acidrain"
 prefix = "apps"
 
