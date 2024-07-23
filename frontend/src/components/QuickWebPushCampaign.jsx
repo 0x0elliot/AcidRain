@@ -65,7 +65,7 @@ export default function QuickWebPushCampaign() {
             return;
         }
 
-        const response = await fetch(`${siteConfig.baseApiUrl}/api/notification/private/segments?shop_identifier=${localUserinfo.current_shop.shop_identifier}`, {
+        const response = await fetch(`${siteConfig.baseApiUrl}/api/notification/private/push-subscribers?shop_identifier=${localUserinfo.current_shop.shop_identifier}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${accessToken}`

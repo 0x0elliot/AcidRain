@@ -74,7 +74,8 @@ func HandlePublicSync(c *fiber.Ctx) error {
 		})
 	}
 
-	if subscription.OwnerID != shop.OwnerID {
+	// if subscription.OwnerID != shop.OwnerID {
+	if subscription.Shop.ID != shop.ID {
 		log.Printf("[ERROR] Unauthorized access")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": true,
@@ -180,13 +181,21 @@ func HandleGetPushSubscribers(c *fiber.Ctx) error {
 		})
 	}
 
-	subscriptions, err := util.GetNoficationSubscriptionByOwnerId(shop.OwnerID)
+	subscriptions, err := util.GetNotificationSubscriptionByShopId(shop.ID)
 	if err != nil {
 		log.Printf("[ERROR] Error getting subscriptions: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
 			"message":   "Error getting subscriptions",
 		})
+	}
+
+	for i, _ := range subscriptions {
+		subscriptions[i].Auth = ""
+		subscriptions[i].P256dh = ""
+		subscriptions[i].Endpoint = ""
+
+		subscriptions[i].Shop.AccessToken = ""
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -308,6 +317,8 @@ func HandleEnablePushNotifications(c *fiber.Ctx) error {
 	var notification models.Notification
 	notification.ShopID = shop.ID
 	notification.NotificationType = "push"
+
+	// configuration includes the message, title, image, etc
 	notification.Configured = false
 
 	_, err = util.SetNotification(&notification)
@@ -357,7 +368,8 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	subscription.Endpoint = req.Subscription.Endpoint
 	subscription.Auth = req.Subscription.Keys.Auth
 	subscription.P256dh = req.Subscription.Keys.P256dh
-	subscription.OwnerID = shop.OwnerID
+	// subscription.OwnerID = shop.OwnerID
+	subscription.Shop = *shop
 
 	// check if subscription already exists
 	_, err = util.GetIdenticalSubscription(subscription)

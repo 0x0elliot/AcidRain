@@ -7,4 +7,6 @@ type Shop struct {
 	AccessToken string `json:"access_token"`
 	Platform string `json:"platform"` // shopify
 	OwnerID string `json:"owner_id"`
+
+	// Replace struct Notification by entries here in the near future
 }

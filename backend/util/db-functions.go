@@ -28,6 +28,17 @@ func GetNotificationSubscriptionById(id string) (*models.NotificationSubscriptio
 	return subscription, nil
 }
 
+func GetNotificationSubscriptionByShopId(shopId string) ([]models.NotificationSubscription, error) {
+	subscriptions := []models.NotificationSubscription{}
+	txn := db.DB.Where("shop_id = ?", shopId).Find(&subscriptions)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting subscription: %v", txn.Error)
+		return subscriptions, txn.Error
+	}
+	return subscriptions, nil
+}
+
+// exclusively for test notifications
 func GetNoficationSubscriptionByOwnerId(ownerID string) ([]models.NotificationSubscription, error) {
 	subscription := models.NotificationSubscription{}
 	txn := db.DB.Where("owner_id = ?", ownerID).Find(&subscription)

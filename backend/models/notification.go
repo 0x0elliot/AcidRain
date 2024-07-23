@@ -30,11 +30,10 @@ type NotificationSubscription struct {
 	P256dh string `json:"p256dh" gorm:"null"`
 
 	// this will become the shopify shop id soon
-	OwnerID string `json:"owner_id"` // only for test notifications
+	OwnerID string `json:"owner_id"` // only for test notifications, from owner
 
 	CustomerIDs pg.StringArray `json:"customer_ids" gorm:"type:text[]"`
 	
-	// might retire these soon
-	NotificationID string `json:"notification_id"`
-	ShopifyUniqueID string `json:"shopify_unique_id"`
+	ShopID string `json:"shop_id"`
+	Shop Shop `json:"shop" gorm:"foreignKey:ShopID;references:ID"`
 }
