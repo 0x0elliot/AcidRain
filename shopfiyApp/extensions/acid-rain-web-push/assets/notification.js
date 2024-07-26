@@ -193,6 +193,12 @@ function sendSubscriptionToServer(subscription) {
     subscription: subscription,
     storeUrl: storeUrl,
   };
+  
+  if (cid) {
+    requestObj.customer = {
+      cid: cid
+    };
+  }
 
   let baseUrl = window.location.origin;
   fetch(`${baseUrl}/apps/acidrain/api/notification/subscribe`, {

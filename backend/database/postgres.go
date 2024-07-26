@@ -67,8 +67,7 @@ func ConnectToDB() {
 	log.Print("Running the migrations...")
 	DB.AutoMigrate(
 		&models.User{}, 
-		&models.Claims{}, 
-		&models.Post{}, 
+		&models.Claims{},  
 		&models.Shop{},
 		&models.Notification{},
 		&models.NotificationSubscription{},

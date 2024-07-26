@@ -195,6 +195,8 @@ func HandleGetPushSubscribers(c *fiber.Ctx) error {
 		subscriptions[i].P256dh = ""
 		subscriptions[i].Endpoint = ""
 
+		log.Printf("[DEBUG] Shop: %v", subscriptions[i].Shop)
+
 		subscriptions[i].Shop.AccessToken = ""
 	}
 
@@ -369,6 +371,7 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	subscription.Auth = req.Subscription.Keys.Auth
 	subscription.P256dh = req.Subscription.Keys.P256dh
 	// subscription.OwnerID = shop.OwnerID
+	// subscription.ShopID = shop.ID
 	subscription.Shop = *shop
 
 	// check if subscription already exists

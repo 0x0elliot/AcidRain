@@ -44,9 +44,6 @@ func SetupRoutes(app *fiber.App) {
 	USER = api.Group("/user")
 	SetupUserRoutes()
 
-	POST = api.Group("/post")
-	SetupPostRoutes()
-
 	SHOP = api.Group("/shop")
 	SetupShopRoutes()
 

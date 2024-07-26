@@ -21,6 +21,9 @@ func GenerateAuthURL(shopName string) string {
 
 	params := url.Values{}
 	params.Add("client_id", ShopifyAPIKey)
+
+	params.Add("response_type", "code")
+
 	params.Add("scope", ShopifyScope)
 	params.Add("redirect_uri", ShopifyRedirectURI)
 	params.Add("state", "nonce") // Add state to prevent CSRF attacks

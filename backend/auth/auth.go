@@ -6,6 +6,9 @@ import (
 
 	db "go-authentication-boilerplate/database"
 	"go-authentication-boilerplate/models"
+
+	uuidLib "github.com/google/uuid"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 
@@ -112,6 +115,8 @@ func GenerateRefreshClaims(cl *models.Claims) (string, error) {
 			IssuedAt:  t.Unix(),
 		},
 	}
+
+	refreshClaim.Id = uuidLib.New().String()
 
 	// create a claim on DB
 	db.DB.Create(&refreshClaim)
