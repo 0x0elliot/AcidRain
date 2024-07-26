@@ -283,6 +283,7 @@ func GetUserData(c *fiber.Ctx) error {
 		if res := db.DB.Where("owner_id = ?", u.ID).First(&s); res.RowsAffected > 0 {
 			u_ := u
 			u_.CurrentShop = *s
+			u_.CurrentShopID = s.ID
 			u_, err := util.SetUser(u_)
 			if err != nil {
 				log.Printf("[ERROR] Couldn't set user: %v", err)

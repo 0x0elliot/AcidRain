@@ -5,6 +5,8 @@ import React from "react"
 import { useEffect } from "react"
 import cookies from 'nookies';
 
+import axios from 'axios';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function Automations() {

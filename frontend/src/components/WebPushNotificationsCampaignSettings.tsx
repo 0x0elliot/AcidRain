@@ -23,7 +23,7 @@ export default function WebPushNotificationsCampaignSettings() {
         try {
             let userinfoJSON = JSON.parse(localStorage.getItem('userinfo') || '{}');
 
-            if (userinfoJSON.current_shop_id?.length < 1) {
+            if (userinfoJSON.current_shop_id?.length > 1) {
                 setRequestShopSetup(false);
             }
         } catch (error) {
