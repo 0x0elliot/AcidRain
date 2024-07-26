@@ -21,7 +21,7 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 	} else {
 		// user is trying to subscribe to test
 		log.Printf("[INFO] User %v is trying to subscribe to push notifications", userId)
-		_, err := GetUserById(userId)
+		user_, err := GetUserById(userId)
 		if err != nil {
 			log.Printf("[ERROR] Error getting user: %v", err)
 			return sub, err
@@ -33,7 +33,9 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 		}
 
 		subscription.OwnerID = userId
+		subscription.ShopID = user_.CurrentShopID
 	}
+
 
 	sub, err := SetNotficationSubscription(subscription)
 	if err != nil {

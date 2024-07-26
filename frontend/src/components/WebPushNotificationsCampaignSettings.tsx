@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { siteConfig } from "@/app/siteConfig";
 
 import cookies from 'nookies';
+import { set } from "date-fns";
 
 export default function WebPushNotificationsCampaignSettings() {
     const [testNotification, setTestNotification] = useState(false);
@@ -48,7 +49,7 @@ export default function WebPushNotificationsCampaignSettings() {
 
     const requestPermission = async () => {
         const result = await Notification.requestPermission();
-        setPermission(result);
+        // setPermission(result);
         if (result === 'granted') {
             await registerServiceWorker();
         }
@@ -69,7 +70,10 @@ export default function WebPushNotificationsCampaignSettings() {
                     "Authorization": `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify(subscription),
-            });
+            }).then(response => response.json())
+            .then(data => {
+                setPermission('granted');
+            })
         } catch (error) {
             console.error("Error registering service worker:", error);
         }

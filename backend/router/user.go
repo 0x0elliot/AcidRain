@@ -142,6 +142,21 @@ func HandleShopifyOauthCallback(c *fiber.Ctx) error {
 		}
 	}
 
+	// update the user's current shop
+	u, err := util.GetUserById(userID)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't get user: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": true, "message": "Couldn't get user"})
+	}
+
+	u.CurrentShop = *s
+	// update the user
+	u, err = util.SetUser(u)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't set user: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": true, "message": "Couldn't set user"})
+	}
+
 	return c.JSON(fiber.Map{"message": "Shopify OAuth callback successful"})
 }
 

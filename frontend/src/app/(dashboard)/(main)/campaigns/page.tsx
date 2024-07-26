@@ -76,7 +76,7 @@ export default function Campaigns() {
                                 Try out {type} campaigns for your shop.
                             </p>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 {type === "Push" && <WebPushNotificationsCampaignSettings />}
                                 {type === "Push" && <WebPushNotificationThemeSettings storeName={shops[0]?.shop_identifier} />}
                                 {type == "Push" && <QuickWebPushCampaign />}
