@@ -5,18 +5,29 @@ import { Button } from "@/components/ui/button"
 import { siteConfig } from "@/app/siteConfig";
 
 import cookies from 'nookies';
-import { set } from "date-fns";
 
 export default function WebPushNotificationsCampaignSettings() {
     const [testNotification, setTestNotification] = useState(false);
     const [permission, setPermission] = useState(null);
     const [accessToken, setAccessToken] = useState("");
+    const [requestShopSetup, setRequestShopSetup] = useState(true);
 
     useEffect(() => {
         setAccessToken(cookies.get(null).access_token);
 
         if (typeof Notification !== 'undefined') {
             setPermission(Notification.permission);
+        }
+
+        // get userinfo from localsotrage
+        try {
+            let userinfoJSON = JSON.parse(localStorage.getItem('userinfo') || '{}');
+
+            if (userinfoJSON.current_shop_id?.length < 1) {
+                setRequestShopSetup(false);
+            }
+        } catch (error) {
+            console.error("Error getting userinfo from localstorage:", error);
         }
     }, [])
 
@@ -48,6 +59,11 @@ export default function WebPushNotificationsCampaignSettings() {
     }, [testNotification, permission]);
 
     const requestPermission = async () => {
+        if (requestShopSetup) {
+            window.location.href = "/automations";
+            return
+        }
+
         const result = await Notification.requestPermission();
         // setPermission(result);
         if (result === 'granted') {
@@ -89,10 +105,11 @@ export default function WebPushNotificationsCampaignSettings() {
                 <div className="flex flex-col space-y-4">
                     <Button 
                         onClick={requestPermission} 
-                        disabled={permission === 'granted'}
+                        disabled={permission === 'granted' && !requestShopSetup}
                         className="text-white bg-black hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium text-sm px-5 py-2.5 text-center dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:focus:ring-gray-400 disabled:opacity-50"
                     >
-                        {permission === 'granted' ? 'Permission Granted' : 'Allow Web Push Notifications'}
+                        {/* {permission === 'granted' ? 'Permission Granted' : 'Allow Web Push Notifications'} */}
+                        {requestShopSetup ? 'Setup Shop First' : permission === 'granted' ? 'Permission Granted' : 'Allow Web Push Notifications'}
                     </Button>
 
                     <Button 

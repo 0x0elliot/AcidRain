@@ -1,10 +1,10 @@
 package util
 
 import (
+	"encoding/json"
 	"go-authentication-boilerplate/models"
 	"log"
 	"os"
-	"encoding/json"
 
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
@@ -13,6 +13,23 @@ import (
 // for the user
 func SubscribeUserToPush(subscription models.NotificationSubscription, userId string) (models.NotificationSubscription, error) {
 	var sub models.NotificationSubscription
+
+	// check if subscription with this endpoint already exists
+	subPtr, err := GetIdenticalSubscription(subscription)
+	if err != nil {
+		if err.Error() == "record not found" {
+		} else {
+			log.Printf("[ERROR] Error getting identical subscription: %v", err)
+			return sub, err
+		}
+	}
+
+	sub = *subPtr
+
+	if sub.ID != "" {
+		log.Printf("[INFO] Subscription already exists: %v", sub)
+		return sub, nil
+	}
 
 	subscription.ID = ""
 
@@ -34,10 +51,12 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 
 		subscription.OwnerID = userId
 		subscription.ShopID = user_.CurrentShopID
+		subscription.Shop = user_.CurrentShop
 	}
 
+	log.Printf("[INFO] Subscription: %v", subscription)
 
-	sub, err := SetNotficationSubscription(subscription)
+	sub, err = SetNotficationSubscription(subscription)
 	if err != nil {
 		log.Printf("[ERROR] Error setting subscription: %v", err)
 		return sub, err

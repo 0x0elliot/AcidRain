@@ -39,6 +39,16 @@ export default function Automations() {
   useEffect(() => {
     let accessToken = cookies.get(null).access_token;
 
+    // use axios to make a request to the API
+    axios.get(`${siteConfig.baseApiUrl}/api/user/private/getinfo`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    }).then((response) => {
+      localStorage.setItem('userinfo', JSON.stringify(response.data));
+    });
+
     fetch(`${siteConfig.baseApiUrl}/api/shop/private/all`, {
       method: 'GET',
       headers: {

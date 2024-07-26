@@ -2,7 +2,6 @@ package models
 
 import (
 	pg "github.com/lib/pq"
-	sql "database/sql"
 )
 
 // i think the table below is a waste of space
@@ -35,6 +34,7 @@ type NotificationSubscription struct {
 
 	CustomerIDs pg.StringArray `json:"customer_ids" gorm:"type:text[]"`
 	
-	ShopID sql.NullString `json:"shop_id"`
-	Shop Shop `json:"shop" gorm:"foreignKey:ShopID;references:ID"`
+	ShopID string `json:"shop_id" gorm:"null"`
+	// Shop Shop `json:"shop" gorm:"foreignKey:id;references:shop_id;"`
+	Shop Shop `json:"shop" gorm:"foreignKey:ShopID;references:ID;null"`
 }

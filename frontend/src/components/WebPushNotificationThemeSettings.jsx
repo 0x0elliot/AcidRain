@@ -82,9 +82,10 @@ export default function WebPushNotificationThemeSettings(props) {
                     >
                         {!notificationEnabled ? (
                             <Link href={handleConfigure()} target="_blank" onClick={handleEnableNotifications}>
-                                Configure
+                                Configure On Shopify
                             </Link>
                         ) : (
+                            // Come back to this when you can auto detect if shopify store has been set up or not
                             <Link href={handleConfigure()} target="_blank">
                                 Configure on Shopify
                             </Link>

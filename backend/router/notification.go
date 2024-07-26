@@ -371,7 +371,7 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	subscription.Auth = req.Subscription.Keys.Auth
 	subscription.P256dh = req.Subscription.Keys.P256dh
 	// subscription.OwnerID = shop.OwnerID
-	// subscription.ShopID = shop.ID
+	subscription.ShopID = shop.ID
 	subscription.Shop = *shop
 
 	// check if subscription already exists
@@ -418,7 +418,14 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 
 	go func() {
 		// send push notification
-		err := util.SendPushNotification("Welcome to AcidRain", "You're now subscribed to push notifications", "https://upload.wikimedia.org/wikipedia/en/a/a9/Example.jpg", "https://upload.wikimedia.org/wikipedia/en/a/a9/Example.jpg", "http://localhost:3000", sub.ID)
+		err := util.SendPushNotification(
+			"Subscription successful!", 
+			"You're now subscribed to push notifications from "+shop.Name,
+			"https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png", // Make customizabe 
+			"https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png", // Make customizabe
+			"https://" + shop.ShopIdentifier, // Make customizabe
+			sub.ID,
+		)
 		if err != nil {
 			log.Printf("[ERROR] Error in sending push notification: %v", err)
 		}

@@ -5,6 +5,7 @@ import (
 	models "go-authentication-boilerplate/models"
 	"log"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -145,7 +146,7 @@ func AppendCustomerIDToSubscription(subscription *models.NotificationSubscriptio
 	).Where(
 		"id = ?",
 		subscription.ID,
-	).Update(
+	).Omit("Shop").Update(
 		"customer_ids",
 		gorm.Expr("array_append(customer_ids, ?)", customerID),
 	).Error
@@ -179,7 +180,7 @@ func SetUser(user *models.User) (*models.User, error) {
 	if user.ID == "" {
 		user.CreatedAt = db.DB.NowFunc().String()
 		user.UpdatedAt = db.DB.NowFunc().String()
-		txn := db.DB.Create(user)
+		txn := db.DB.Omit("current_shop").Create(user)
 		if txn.Error != nil {
 			log.Printf("[ERROR] Error creating user: %v", txn.Error)
 			return user, txn.Error
@@ -199,9 +200,10 @@ func SetUser(user *models.User) (*models.User, error) {
 func SetNotficationSubscription(subscription models.NotificationSubscription) (models.NotificationSubscription, error) {
 	// check if subscription with ID exists
 	if subscription.ID == "" {
+		subscription.ID = uuid.New().String()
 		subscription.CreatedAt = db.DB.NowFunc().String()
 		subscription.UpdatedAt = db.DB.NowFunc().String()
-		txn := db.DB.Create(&subscription)
+		txn := db.DB.Omit("Shop").Create(&subscription)
 		if txn.Error != nil {
 			log.Printf("[ERROR] Error creating subscription: %v", txn.Error)
 			return subscription, txn.Error
