@@ -998,7 +998,7 @@ const RangeDatePicker = ({
                   </Button>
                   <Button
                     variant="primary"
-                    className="h-8 w-full bg-indigo-600 sm:w-fit"
+                    className="h-8 w-full bg-orange-600 sm:w-fit"
                     type="button"
                     onClick={onApply}
                   >

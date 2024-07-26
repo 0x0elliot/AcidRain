@@ -495,11 +495,11 @@ func HandlePushNotification(c *fiber.Ctx) error {
 			})
 		}
 
-		examplePic := "https://upload.wikimedia.org/wikipedia/en/a/a9/Example.jpg"
+		examplePic := "https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png"
 
 		for _, subscription := range subscriptions {
 			req.Body = "Test push notification"
-			req.Title = "You're now subscribed!"
+			req.Title = "Test push notification!"
 			// err := util.SendPushNotification(req.Title, req.Body, subscription.ID)
 			err := util.SendPushNotification(req.Title, req.Body, examplePic, examplePic,"http://localhost:3000", subscription.ID) 
 			if err != nil {

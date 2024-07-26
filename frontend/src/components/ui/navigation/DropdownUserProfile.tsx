@@ -82,7 +82,7 @@ export function DropdownUserProfile({
                     <RiSunLine className="size-4 shrink-0" aria-hidden="true" />
                     Light
                   </DropdownMenuRadioItem>
-                  {/* <DropdownMenuRadioItem
+                  <DropdownMenuRadioItem
                     aria-label="Switch to Dark Mode"
                     value="dark"
                     iconType="check"
@@ -103,7 +103,7 @@ export function DropdownUserProfile({
                       aria-hidden="true"
                     />
                     System
-                  </DropdownMenuRadioItem> */}
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuSubMenuContent>
             </DropdownMenuSubMenu>

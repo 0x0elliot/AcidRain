@@ -39,11 +39,11 @@ export const chartColors = {
     fill: "fill-cyan-500",
     text: "text-cyan-500",
   },
-  indigo: {
-    bg: "bg-indigo-600 dark:bg-indigo-500",
-    stroke: "stroke-indigo-600 dark:stroke-indigo-500",
-    fill: "fill-indigo-600 dark:fill-indigo-500",
-    text: "text-indigo-600 dark:text-indigo-500",
+  orange: {
+    bg: "bg-orange-600 dark:bg-orange-500",
+    stroke: "stroke-orange-600 dark:stroke-orange-500",
+    fill: "fill-orange-600 dark:fill-orange-500",
+    text: "text-orange-600 dark:text-orange-500",
   },
   pink: {
     bg: "bg-pink-500",

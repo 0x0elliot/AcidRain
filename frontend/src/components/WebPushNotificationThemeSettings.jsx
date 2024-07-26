@@ -31,7 +31,7 @@ export default function WebPushNotificationThemeSettings(props) {
             .then(response => response.json())
             .then(data => {
                 setNotifications(data.notifications);
-                if (data.notifications.length > 0) {
+                if (data.notifications.length > 1) {
                     // this means the user has enabled push notifications for their store
                     // later, we filter by "push" to check if the user has enabled push notifications
                     setNotificationEnabled(true);
@@ -86,7 +86,7 @@ export default function WebPushNotificationThemeSettings(props) {
                             </Link>
                         ) : (
                             <Link href={handleConfigure()} target="_blank">
-                                Re-Configure on Shopify
+                                Configure on Shopify
                             </Link>
                         )}
                     </Button>
