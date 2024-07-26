@@ -119,23 +119,32 @@ export default function Automations() {
             </div>
         </div>
       </div>
-      )}
+    )} 
       
       {showPopup && (
         <div className="flex items-center justify-center h-screen">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
-            <div className="p-6 rounded-lg shadow-md">
+            <div className="p-6 rounded-lg shadow-md w-96"> {/* Adjust width here */}
               <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-50">
                 Enter Shop Name
               </h3>
-              <input
-                type="text"
-                className="w-full px-3 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                value={shopName}
-                onChange={(e) => setShopName(e.target.value)}
-                placeholder="Shop Name"
-              />
+
+              <div className="relative flex w-full border rounded-md">
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border-none rounded-l-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  value={shopName}
+                  onChange={(e) => setShopName(e.target.value)}
+                  placeholder="Shop Name"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 bg-gray-200 border-l border-gray-300 rounded-r-md">
+                  <span className="text-gray-500">.myshopify.com</span>
+                </div>
+              </div>
+
+            <div className="mt-4">
+
               <button
                 type="button"
                 className="inline-flex items-center px-4 py-2 mr-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
@@ -150,6 +159,7 @@ export default function Automations() {
               >
                 Cancel
               </button>
+              </div>
             </div>
           </div>
         </div>

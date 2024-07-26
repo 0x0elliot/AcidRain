@@ -43,7 +43,9 @@ func HandlePublicSync(c *fiber.Ctx) error {
 	type PublicSyncRequest struct {
 		Subscription SubscribeToPushRequest `json:"subscription"`
 		StoreUrl string `json:"storeUrl"`
-		Cid int64 `json:"cid"`
+		Customer struct {
+			Cid int64 `json:"cid"`
+		} `json:"customer"`
 	}
 
 	var req PublicSyncRequest
@@ -74,8 +76,10 @@ func HandlePublicSync(c *fiber.Ctx) error {
 		})
 	}
 
+	log.Printf("[DEBUG Subscription shop ID and shop ID: %v, %v", subscription.ShopID, shop.ID)
+
 	// if subscription.OwnerID != shop.OwnerID {
-	if subscription.Shop.ID != shop.ID {
+	if subscription.ShopID != shop.ID {
 		log.Printf("[ERROR] Unauthorized access")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": true,
@@ -96,9 +100,18 @@ func HandlePublicSync(c *fiber.Ctx) error {
 		})
 	}
 
+	if (req.Customer.Cid != 0) {
+		resp, err := util.GetCustomer(fmt.Sprint(req.Customer.Cid), shop.AccessToken, shop.ShopIdentifier)
+		if err != nil {
+			log.Printf("[ERROR] Error getting customer: %v", err)
+		} else {
+			log.Printf("[DEBUG] Customer: %v", resp)
+		}
+	}
+
 	existingCustomerIds := sub.CustomerIDs
-	if !util.Contains(existingCustomerIds, fmt.Sprint(req.Cid)) {
-		err := util.AppendCustomerIDToSubscription(&sub, fmt.Sprint(req.Cid))
+	if !util.Contains(existingCustomerIds, fmt.Sprint(req.Customer.Cid)) {
+		err := util.AppendCustomerIDToSubscription(&sub, fmt.Sprint(req.Customer.Cid))
 		if err != nil {
 			log.Printf("[ERROR] Error appending customer id to subscription: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

@@ -96,11 +96,11 @@ export default function WebPushNotificationThemeSettings(props) {
                 {/* Add subtitle context below */}
                 <div className="justify-center p-4 margin-top-10">
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                        If you ever end up uninstalling the app embed, don't worry!
+                        Make sure our shopify app is installed in your store.
                     </p>
 
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                        just click on the above button to re-enable the extension.
+                        just click on the above button to verify if you're not sure :)
                     </p>
                 </div>
             </div>

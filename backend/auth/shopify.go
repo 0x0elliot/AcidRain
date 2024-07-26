@@ -13,7 +13,7 @@ import (
 
 var ShopifyAPIKey string = os.Getenv("ACIDRAIN_SHOPIFY_CLIENT_ID")
 var ShopifyAPISecret string = os.Getenv("ACIDRAIN_SHOPIFY_CLIENT_SECRET")
-var ShopifyScope string = "read_products,write_products"
+var ShopifyScope string = "read_products,write_products,read_customers,read_orders"
 var ShopifyRedirectURI string = "http://localhost:3000/shopify/callback"
 
 func GenerateAuthURL(shopName string) string {

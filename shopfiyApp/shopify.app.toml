@@ -7,7 +7,8 @@ application_url = "https://localhost:3000/"
 embedded = false
 
 [build]
-dev_store_url = "quickstart-af996de0.myshopify.com"
+# dev_store_url = "quickstart-af996de0.myshopify.com"
+dev_store_url = "187d1f-e0.myshopify.com"
 include_config_on_deploy = true
 
 [access_scopes]

@@ -1,52 +1,3 @@
-class Observable {
-  constructor() {
-      this.observers = [];
-  }
-
-  subscribe(fn) {
-      this.observers.push(fn);
-  }
-
-  unsubscribe(fn) {
-      this.observers = this.observers.filter(observer => observer !== fn);
-  }
-
-  notify(data) {
-      this.observers.forEach(observer => observer(data));
-  }
-}
-
-// Create an observable for __st.cid
-const cidObservable = new Observable();
-
-// Set up the watcher
-if (window.__st) {
-  let currentCid = window.__st.cid;
-  Object.defineProperty(window.__st, 'cid', {
-      get: function() {
-          return currentCid;
-      },
-      set: function(newValue) {
-          if (newValue !== currentCid) {
-              currentCid = newValue;
-              cidObservable.notify(newValue);
-          }
-      }
-  });
-}
-
-// Now you can "listen" for changes like this:
-cidObservable.subscribe((newCid) => {
-  if (newCid) {
-    navigator.pushManager.getSubscription()
-      .then(function (subscription) {
-        if (subscription) {
-          syncSubscriptionOnServer(subscription, { cid: newCid });
-        }
-      });
-  }
-});
-
 // this file will eventually belong in a CDN
 document.addEventListener('DOMContentLoaded', function () {
   let baseUrl = window.location.origin;
@@ -61,6 +12,12 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(async function (subscription) {
             if (subscription) {
               console.log('Already subscribed:', subscription);
+              if (window.__st) {
+                let currentCid = window.__st.cid;
+                if (currentCid) {
+                  syncSubscriptionOnServer(subscription, { cid: currentCid });
+                } 
+              }
               // check local storage for subscription to avoid spam
               // if (localStorage.getItem('acidRainWebPush') === '1') {
               //   console.log('Already subscribed:', subscription);

@@ -50,7 +50,7 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 		}
 
 		subscription.OwnerID = userId
-		subscription.ShopID = user_.CurrentShopID
+		subscription.ShopID = *user_.CurrentShopID
 		subscription.Shop = user_.CurrentShop
 	}
 

@@ -78,7 +78,7 @@ export default function QuickWebPushCampaign() {
             return;
         }
 
-        setWebPushSegments(data.segments);
+        setWebPushSegments(data.subscriptions);
     }
 
     return (
@@ -108,7 +108,19 @@ export default function QuickWebPushCampaign() {
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg">
                         <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-50">Select a segment</h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400">Select a segment to send the campaign to</p>
-                        <div className="flex justify-center p-4 mt-10 space-x-4" style={{ marginTop: "2rem" }}>
+                        <div className="flex flex-col items-center overflow-y-auto p-4 rounded-lg">
+                        {/* Iterate over all the subscribers and show them here as a checklist */}
+                            {webPushSegments.map((segment) => (
+                                // this list should be vertically scrollable and centered and pretty. 
+                                // after each element, new line should start
+                                <div key={segment.id} className="flex items-center space-x-4 mb-2">
+                                    <input type="checkbox" id={segment.id} name={segment.id} value={segment.id} />
+                                    <label htmlFor={segment.id}>{segment.owner_id ? "Your test subscription" : segment.customer_ids }</label>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex justify-center">
                             <Button
                                 className="text-white bg-black hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium text-sm px-5 py-2.5 text-center dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:focus:ring-gray-400 disabled:opacity-50"
                                 onClick={() => setSegmentSelectionModalOpen(false)}
