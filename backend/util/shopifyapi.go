@@ -19,6 +19,9 @@ type CustomerResponse struct {
     Customer Customer `json:"customer"`
 }
 
+// { "errors": "[API] This app is not approved to access REST endpoints with protected customer data. 
+// See https://partners.shopify.com/3749128/apps/139572805633/customer_data for more details."
+// }
 func GetCustomer(customerID string, accessToken string, shopName string) (Customer, error) {
     // curl -X GET "https://your-development-store.myshopify.com/admin/api/2024-01/customers/207119551.json" \
     // -H "X-Shopify-Access-Token: {access_token}"
