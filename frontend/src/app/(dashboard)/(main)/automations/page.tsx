@@ -93,32 +93,31 @@ export default function Automations() {
       {/* The button should be convincing, and should be the first thing the user sees */}
       {/* Clicking on it should open a popup text box that asks for the shop name */}
       {(!shopExists && !showPopup) && (
-      <div className="flex items-center justify-center h-screen">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        {/* <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center"> */}
-          <div className="relative p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                Add a shop
-              </h3>
-            </div>
-            <div className="mt-2">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Add a shop to get started with your automations.
-              </p>
-            </div>
-            <div className="mt-4">
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                onClick={() => setShowPopup(true)}
-              >
-                Add a shop
-              </button>
-            </div>
-            </div>
+        <div className="relative flex items-center justify-center h-screen">
+        <div className="relative p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 z-50">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+              Add a shop
+            </h3>
+          </div>
+          <div className="mt-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Add a shop to get started with your automations.
+            </p>
+          </div>
+          <div className="mt-4">
+            <button
+              type="button"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              onClick={() => setShowPopup(true)}
+            >
+              Add a shop
+            </button>
+          </div>
         </div>
       </div>
+      
+
     )} 
       
       {showPopup && (
