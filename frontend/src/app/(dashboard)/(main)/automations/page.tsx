@@ -168,6 +168,7 @@ export default function Automations() {
       {/* Add two clickable "tabs" from shadcn */}
       {/* The first tab should be "Order Automations" */}
       {/* The second tab should be "Promotion Automations" */}
+      {shopExists && (
       <div className="my-tabs mt-4">
 
 
@@ -190,10 +191,9 @@ export default function Automations() {
             </div>
           </TabsContent>
         ))}
-
-
       </Tabs>
       </div>
+      )}
 
     </>
   )

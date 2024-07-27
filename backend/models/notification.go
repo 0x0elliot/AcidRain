@@ -13,11 +13,25 @@ type Notification struct {
 	Configured bool `json:"configured"`
 }
 
+// primarily just for Web Push Notifications
+type NotificationConfiguration struct {
+	Base
+	NotificationType string `json:"notification_type"` // email, push, sms
+	ShopID string `json:"shop_id"`
+	Title string `json:"title"`
+	Message string `json:"message"`
+	URL string `json:"url"`
+	Icon string `json:"icon"`
+	Badge string `json:"badge"`
+}
+
 type NotificationsSent struct {
 	Base
 	NotificationID string `json:"notification_id"`
 	NotificationSubscriptionID string `json:"notification_subscription_id"`
 	NotificationStatus string `json:"notification_status"`
+	NotificationConfigurationID string `json:"notification_configuration_id"`
+	NotificationConfiguration NotificationConfiguration `json:"notification_configuration" gorm:"foreignKey:NotificationConfigurationID;references:ID;"`
 }
 
 type NotificationSubscription struct {

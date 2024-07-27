@@ -70,6 +70,7 @@ func ConnectToDB() {
 		&models.Claims{},  
 		&models.Shop{},
 		&models.Notification{},
+		&models.NotificationConfiguration{},
 		&models.NotificationSubscription{},
 		&models.TrackedUser{},
 	)

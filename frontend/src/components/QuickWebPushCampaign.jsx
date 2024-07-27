@@ -1,18 +1,29 @@
+"use client";
+
 import React, { useEffect } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button"
 
+import axios from "axios";
+
 import cookies from 'nookies';
 import { siteConfig } from "@/app/siteConfig";
+import ConfigureWebPushCampaign from "./ConfigureWebPushCampaign";
 
 export default function QuickWebPushCampaign() {
-    const [segmentFinalized, setSegmentFinalized] = useState(false);
     const [segmentSelectionModalOpen, setSegmentSelectionModalOpen] = useState(false);
-    const [webPushSegments, setWebPushSegments] = useState([]);
+    const [configureCampaignModalOpen, setConfigureCampaignModalOpen] = useState(false);
+
+    const [webPushSubscriberCount, setWebPushSubscriberCount] = useState(0);
+    const [notificationsToAll, setNotificationsToAll] = useState(false);
 
     const [userinfo, setUserinfo] = useState({});
 
     const [accessToken, setAccessToken] = useState(null);
+
+    const closeModalCampaign = () => {
+        setConfigureCampaignModalOpen(false);
+    };    
 
     useEffect(() => {
         const token  = cookies.get(null).access_token;
@@ -35,6 +46,29 @@ export default function QuickWebPushCampaign() {
             getWebPushSegments();
         }
     }, [segmentSelectionModalOpen]);
+
+    const handleWebPushToAll = (e) => {
+        console.log(e.target.checked);
+        setNotificationsToAll(e.target.checked);
+    }
+
+    const handleLaunchCampaign = () => {
+        axios.post(`${siteConfig.baseApiUrl}/api/notification/private/launch`, {
+            all: notificationsToAll,
+            shop_identifier: userinfo.current_shop.shop_identifier,
+        }, {
+            headers: {
+                contentType: 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }).then((response) => {
+            console.log(response.data);
+        }
+        ).catch((error) => {
+            console.error(error
+            );
+        });
+    }
 
     const getWebPushSegments = async () => {
         // check local storage, userinfo. if it has a "CurrentShop" key, then use that shop identifier
@@ -65,7 +99,7 @@ export default function QuickWebPushCampaign() {
             return;
         }
 
-        const response = await fetch(`${siteConfig.baseApiUrl}/api/notification/private/push-subscribers?shop_identifier=${localUserinfo.current_shop.shop_identifier}`, {
+        const response = await fetch(`${siteConfig.baseApiUrl}/api/notification/private/push-subscribers?shop_identifier=${localUserinfo.current_shop.shop_identifier}&count_only=true`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${accessToken}`
@@ -78,17 +112,18 @@ export default function QuickWebPushCampaign() {
             return;
         }
 
-        setWebPushSegments(data.subscriptions);
+        setWebPushSubscriberCount(data.count);
     }
 
     return (
         <div className="flex bg-white dark:bg-gray-900">
             <div className="flex-1 p-4">
                 <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-50">Launch a quick campaign</h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Select from your segment</p>
-                <div className="flex justify-center p-4 mt-10 space-x-4" style={{ marginTop: "2rem" }}>
+                <p style={{ marginBottom: 10 }} className="text-sm text-gray-600 dark:text-gray-400">Select from your segment</p>
+                {/* <div className="flex justify-center p-4 mt-10 space-x-4" style={{ marginTop: "2rem" }}> */}
+                <div className="flex flex-col space-y-4">
                     <Button
-                        className="text-white bg-black hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium text-sm px-5 py-2.5 text-center dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:focus:ring-gray-400 disabled:opacity-50"
+                        className="text-white bg-black hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium text-sm px-5 py-2.5 text-center dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:focus:ring-gray-400 disabled:opacity-50 "
                         onClick={() => segmentSelectionModalOpen ? setSegmentSelectionModalOpen(false) : setSegmentSelectionModalOpen(true)}
                     >
                         Select a segment
@@ -96,12 +131,28 @@ export default function QuickWebPushCampaign() {
 
                     <Button
                         className="text-white bg-black hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium text-sm px-5 py-2.5 text-center dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:focus:ring-gray-400 disabled:opacity-50"
-                        disabled={!segmentFinalized}
+                        disabled={!notificationsToAll}
+                        onClick={() => configureCampaignModalOpen ? setConfigureCampaignModalOpen(false) : setConfigureCampaignModalOpen(true)}
+                    >
+                            Configure
+                    </Button>
+
+                    <Button
+                        className="text-white bg-black hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium text-sm px-5 py-2.5 text-center dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:focus:ring-gray-400 disabled:opacity-50"
+                        disabled={true}
+                        onClick={() => handleLaunchCampaign()}
                         >
                         Launch
                     </Button>
                 </div>
             </div>
+
+
+            {(configureCampaignModalOpen) && (
+                <div className="fixed inset-0 bg-opacity-50 z-50 flex items-center justify-center">
+                    <ConfigureWebPushCampaign onClose={closeModalCampaign} />
+                </div>
+            )}
 
             {(segmentSelectionModalOpen) && (
                 <div className="fixed inset-0 bg-opacity-50 z-50 flex items-center justify-center">
@@ -110,20 +161,18 @@ export default function QuickWebPushCampaign() {
                         <p className="text-sm text-gray-600 dark:text-gray-400">Select a segment to send the campaign to</p>
                         <div className="flex flex-col items-center overflow-y-auto p-4 rounded-lg">
                         {/* Iterate over all the subscribers and show them here as a checklist */}
-                            {webPushSegments.map((segment) => (
-                                // this list should be vertically scrollable and centered and pretty. 
-                                // after each element, new line should start
-                                <div key={segment.id} className="flex items-center space-x-4 mb-2">
-                                    <input type="checkbox" id={segment.id} name={segment.id} value={segment.id} />
-                                    <label htmlFor={segment.id}>{segment.owner_id ? "Your test subscription" : segment.customer_ids }</label>
+                            <div className="flex flex-col space-y-2">
+                                <div className="flex items-center space-x-2">
+                                    <input type="checkbox" id="all" name="all" value="all" onChange={(e) => handleWebPushToAll(e) } />
+                                    <label htmlFor="all">All ({webPushSubscriberCount}) Web Push Subscribers + Your test subscription</label>
                                 </div>
-                            ))}
+                            </div>
                         </div>
 
                         <div className="flex justify-center">
                             <Button
                                 className="text-white bg-black hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium text-sm px-5 py-2.5 text-center dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:focus:ring-gray-400 disabled:opacity-50"
-                                onClick={() => setSegmentSelectionModalOpen(false)}
+                                onClick={() => setSegmentSelectionModalOpen(false) }
                             >
                                 Select
                             </Button>
@@ -131,8 +180,6 @@ export default function QuickWebPushCampaign() {
                     </div>
                 </div>
             )}
-
-
         </div>
 
 

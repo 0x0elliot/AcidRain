@@ -28,6 +28,9 @@ func SetupNotificationRoutes() {
 	privNotification.Post("/disable/push-notifications", HandleDisablePushNotifications)
 
 	privNotification.Get("/push-subscribers", HandleGetPushSubscribers)
+
+	privNotification.Post("/notification-configuration", HandleSaveNotificationConfiguration)
+	privNotification.Post("/launch", HandleLaunchNotification)
 }
 
 type SubscribeToPushRequest struct {
@@ -100,14 +103,15 @@ func HandlePublicSync(c *fiber.Ctx) error {
 		})
 	}
 
-	if (req.Customer.Cid != 0) {
-		resp, err := util.GetCustomer(fmt.Sprint(req.Customer.Cid), shop.AccessToken, shop.ShopIdentifier)
-		if err != nil {
-			log.Printf("[ERROR] Error getting customer: %v", err)
-		} else {
-			log.Printf("[DEBUG] Customer: %v", resp)
-		}
-	}
+	// Let's play around with this after launch
+	// if (req.Customer.Cid != 0) {
+	// 	resp, err := util.GetCustomer(fmt.Sprint(req.Customer.Cid), shop.AccessToken, shop.ShopIdentifier)
+	// 	if err != nil {
+	// 		log.Printf("[ERROR] Error getting customer: %v", err)
+	// 	} else {
+	// 		log.Printf("[DEBUG] Customer: %v", resp)
+	// 	}
+	// }
 
 	existingCustomerIds := sub.CustomerIDs
 	if !util.Contains(existingCustomerIds, fmt.Sprint(req.Customer.Cid)) {
@@ -171,11 +175,13 @@ func HandleGetNotifications(c *fiber.Ctx) error {
 func HandleGetPushSubscribers(c *fiber.Ctx) error {
 	type GetPushSubscribersRequest struct {
 		ShopIdentifier string `json:"shop_identifier"`
+		CountOnly bool `json:"count_only"`
 	}
 
 	var req GetPushSubscribersRequest
 	// this is a GET request, so we need to get the query params
 	req.ShopIdentifier = c.Query("shop_identifier")
+	req.CountOnly = c.Query("count_only") == "true"
 
 	shop, err := util.GetShopFromShopIdentifier(req.ShopIdentifier)
 	if err != nil {
@@ -191,6 +197,22 @@ func HandleGetPushSubscribers(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": true,
 			"message":   "Unauthorized access",
+		})
+	}
+
+	if req.CountOnly {
+		subscriptionCount, err := util.GetCountOfNotificationSubscriptionsByShopId(shop.ID)
+		if err != nil {
+			log.Printf("[ERROR] Error getting subscription count: %v", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": true,
+				"message":   "Error getting subscription count",
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"error": false,
+			"count": subscriptionCount,
 		})
 	}
 
@@ -478,6 +500,132 @@ func HandleSubscribeToPush(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error": false,
 		"message":   "User subscribed to push notifications successfully",
+	})
+}
+
+func HandleSaveNotificationConfiguration(c *fiber.Ctx) error {
+	var req models.NotificationConfiguration
+	if err := c.BodyParser(&req); err != nil {
+		log.Printf("[ERROR] Error in parsing request body: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error parsing request body",
+		})
+	}
+
+	req.ID = ""
+	req.CreatedAt = ""
+	req.UpdatedAt = ""
+
+	if req.ShopID == "" {
+		log.Printf("[ERROR] Shop ID is required")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"message":   "Shop ID is required",
+		})
+	}
+
+	shop, err := util.GetShopById(req.ShopID)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Unauthorized access")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"message":   "Unauthorized access",
+		})
+	}
+
+	// save notification configuration
+	notConfig, err := util.SetNotificationConfiguration(&req)
+	if err != nil {
+		log.Printf("[ERROR] Error setting notification configuration: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error setting notification configuration",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"notification": notConfig,
+	})
+}
+
+func HandleLaunchNotification(c *fiber.Ctx) error {
+	type LaunchNotificationRequest struct {
+		ShopIdentifier string `json:"shop_identifier"`
+		All bool `json:"all"`
+	}
+
+	var req LaunchNotificationRequest
+	if err := c.BodyParser(&req); err != nil {
+		log.Printf("[ERROR] Error in parsing request body: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error parsing request body",
+		})
+	}
+
+	shop, err := util.GetShopFromShopIdentifier(req.ShopIdentifier)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Forbidden request")
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": true,
+			"message":   "Forbidden request",
+		})
+	}
+
+	// get all subscriptions
+	subscriptions, err := util.GetNotificationSubscriptionByShopId(shop.ID)
+	if err != nil {
+		log.Printf("[ERROR] Error getting subscriptions: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting subscriptions",
+		})
+	}
+
+	if len(subscriptions) == 0 {
+		log.Printf("[ERROR] No subscriptions found")
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"error": false,
+			"message":   "No subscriptions found",
+		})
+	}
+
+	// send push notification
+	for _, subscription := range subscriptions {
+		err := util.SendPushNotification(
+			"New notification!", 
+			"New notification from "+shop.Name,
+			"https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png", // Make customizabe 
+			"https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png", // Make customizabe
+			"https://" + shop.ShopIdentifier, // Make customizabe
+			subscription.ID,
+		)
+		if err != nil {
+			log.Printf("[ERROR] Error in sending push notification: %v", err)
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"message":   "Push notification sent successfully",
 	})
 }
 

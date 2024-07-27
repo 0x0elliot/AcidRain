@@ -29,6 +29,40 @@ func GetNotificationSubscriptionById(id string) (*models.NotificationSubscriptio
 	return subscription, nil
 }
 
+func SetNotificationConfiguration(notificationConfiguration *models.NotificationConfiguration) (*models.NotificationConfiguration, error) {
+	// check if notificationConfiguration with ID exists
+	if notificationConfiguration.ID == "" {
+		notificationConfiguration.ID = uuid.New().String()
+		notificationConfiguration.CreatedAt = db.DB.NowFunc().String()
+		notificationConfiguration.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Create(notificationConfiguration)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error creating notification configuration: %v", txn.Error)
+			return notificationConfiguration, txn.Error
+		}
+	} else {
+		notificationConfiguration.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Save(notificationConfiguration)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error saving notification configuration: %v", txn.Error)
+			return notificationConfiguration, txn.Error
+		}
+	}
+
+	return notificationConfiguration, nil
+}
+
+func GetCountOfNotificationSubscriptionsByShopId(shopId string) (int64, error) {
+	var count int64
+	// Don't count the notifications with a owner_id
+	txn := db.DB.Model(&models.NotificationSubscription{}).Where("shop_id = ? AND owner_id = ''", shopId).Count(&count)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting subscription count: %v", txn.Error)
+		return count, txn.Error
+	}
+	return count, nil
+}
+
 func GetNotificationSubscriptionByShopId(shopId string) ([]models.NotificationSubscription, error) {
 	subscriptions := []models.NotificationSubscription{}
 	txn := db.DB.Where("shop_id = ?", shopId).Find(&subscriptions)
@@ -79,6 +113,16 @@ func GetSubscriptionFromEndpoint(endpoint string) (*models.NotificationSubscript
 		return sub, txn.Error
 	}
 	return sub, nil
+}
+
+func GetShopById(shopId string) (*models.Shop, error) {
+	shop := new(models.Shop)
+	txn := db.DB.Where("id = ?", shopId).First(shop)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting shop: %v", txn.Error)
+		return shop, txn.Error
+	}
+	return shop, nil
 }
 
 func GetShopFromShopIdentifier(shopIdentifier string) (*models.Shop, error) {

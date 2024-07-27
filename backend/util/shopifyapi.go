@@ -38,7 +38,6 @@ func GetCustomer(customerID string, accessToken string, shopName string) (Custom
     log.Printf("[DEBUG] Access token: %s", accessToken)
 
     req.Header.Set("X-Shopify-Access-Token", accessToken)
-    req.Header.Set("Host", fmt.Sprintf("%s", shopName))
     client := &http.Client{}
     resp, err := client.Do(req)
     if err != nil {
