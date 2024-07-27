@@ -125,6 +125,26 @@ func GetShopById(shopId string) (*models.Shop, error) {
 	return shop, nil
 }
 
+func GetNotificationConfigurationById(id string, shopId string) (*models.NotificationConfiguration, error) {
+	notificationConfiguration := new(models.NotificationConfiguration)
+	txn := db.DB.Where("id = ? AND shop_id = ?", id, shopId).First(notificationConfiguration)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting notification configuration: %v", txn.Error)
+		return notificationConfiguration, txn.Error
+	}
+	return notificationConfiguration, nil
+}
+
+func GetNotificationConfigurationsById(id string) ([]*models.NotificationConfiguration, error) {
+	notificationConfigurations := []*models.NotificationConfiguration{}
+	txn := db.DB.Where("shop_id = ?", id).Find(&notificationConfigurations)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting campaigns: %v", txn.Error)
+		return notificationConfigurations, txn.Error
+	}
+	return notificationConfigurations, nil
+}	
+
 func GetShopFromShopIdentifier(shopIdentifier string) (*models.Shop, error) {
 	shop := new(models.Shop)
 	txn := db.DB.Where("shop_identifier = ?", shopIdentifier).First(shop)

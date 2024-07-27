@@ -3,3 +3,4 @@ data/**
 yarn.lock
 .env
 .DS_Store
+**/gcp_credentials.json

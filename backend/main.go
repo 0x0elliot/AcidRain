@@ -31,5 +31,6 @@ func main() {
 		return c.SendStatus(404) // => 404 "Not Found"
 	})
 
+	log.Println("[INFO] Server started on :5002")
 	log.Fatal(app.Listen(":5002"))
 }

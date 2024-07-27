@@ -67,6 +67,7 @@
     "react-phone-input-2": "^2.15.1",
     "react-phone-number-input": "^3.4.3",
     "react-router-dom": "^6.23.1",
+    "react-toastify": "^10.0.5",
     "recharts": "^2.12.7",
     "shadcn": "^1.0.0",
     "slate": "^0.103.0",

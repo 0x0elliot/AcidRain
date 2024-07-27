@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes"
 import { Inter } from "next/font/google"
+import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 const inter = Inter({
@@ -70,7 +71,8 @@ export default function RootLayout({
       >
         <ThemeProvider defaultTheme="system" attribute="class">
             <main>{children}</main>
-          </ThemeProvider>
+            <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   )

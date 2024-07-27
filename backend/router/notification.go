@@ -8,8 +8,10 @@ import (
 
 	"log"
 	// "strings"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"cloud.google.com/go/storage"
 )
 
 func SetupNotificationRoutes() {
@@ -28,6 +30,7 @@ func SetupNotificationRoutes() {
 	privNotification.Post("/disable/push-notifications", HandleDisablePushNotifications)
 
 	privNotification.Get("/push-subscribers", HandleGetPushSubscribers)
+	privNotification.Get("/configurations", HandleGetNotificationConfigurations)
 
 	privNotification.Post("/notification-configuration", HandleSaveNotificationConfiguration)
 	privNotification.Post("/launch", HandleLaunchNotification)
@@ -503,6 +506,48 @@ func HandleSubscribeToPush(c *fiber.Ctx) error {
 	})
 }
 
+func HandleGetNotificationConfigurations(c *fiber.Ctx) error {
+	type GetNotificationCampaignRequest struct {
+		ShopId string `json:"shop_id"`
+	}
+
+	var req GetNotificationCampaignRequest
+
+	req.ShopId = c.Query("shop_id")
+
+	shop, err := util.GetShopById(req.ShopId)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Unauthorized access")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"message":   "Unauthorized access",
+		})
+	}
+
+	notifConfigs, err := util.GetNotificationConfigurationsById(shop.ID)
+	if err != nil {
+		log.Printf("[ERROR] Error getting notification configuration: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting notification configuration",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"configurations": notifConfigs,
+	})
+}
+
+
 func HandleSaveNotificationConfiguration(c *fiber.Ctx) error {
 	var req models.NotificationConfiguration
 	if err := c.BodyParser(&req); err != nil {
@@ -542,6 +587,65 @@ func HandleSaveNotificationConfiguration(c *fiber.Ctx) error {
 		})
 	}
 
+	// if configuration Icon and Badge are not empty AND they are base64 encoded
+	if req.Icon != "" && req.Badge != "" {
+		var storage *storage.Client
+		bucketName := os.Getenv("ACIDRAIN_GCP_BUCKET_NAME")
+
+		if util.IsBase64Image(req.Icon) || util.IsBase64Image(req.Badge) {
+			storage, err = util.InitializeGCP(
+				os.Getenv("ACIDRAIN_GCP_PROJECT_ID"),
+				bucketName,
+				os.Getenv("ACIDRAIN_GCP_CREDS"),
+			)
+
+			if err != nil {
+				log.Printf("[ERROR] Error initializing GCP: %v", err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": true,
+					"message":   "Internal server error",
+				})
+			}
+		}
+
+		// check if Icon and Badge are base64 encoded
+		if util.IsBase64Image(req.Icon) {
+			req.Icon, err = util.UploadImageToGCP(storage, bucketName, shop.ID + "_" + req.ID + "_icon", req.Icon)
+			if err != nil {
+				log.Printf("[ERROR] Error uploading icon to GCP: %v", err)
+				if err.Error() == "image size exceeds 5 MB" {
+					return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+						"error": true,
+						"message":   "Image size exceeds 5 MB",
+					})
+				}
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": true,
+					"message":   "Internal server error",
+				})
+			}
+		}
+
+		if util.IsBase64Image(req.Badge) {
+			req.Badge, err = util.UploadImageToGCP(storage, bucketName, shop.ID + "_" + req.ID + "_badge", req.Badge)
+			if err != nil {
+				log.Printf("[ERROR] Error uploading badge to GCP: %v", err)
+				if err.Error() == "image size exceeds 5 MB" {
+					return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+						"error": true,
+						"message":   "Image size exceeds 5 MB",
+					})
+				}
+
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": true,
+					"message":   "Error uploading badge to bucket -- is it a valid base64 image?",
+				})
+			}
+		}
+	}
+
 	// save notification configuration
 	notConfig, err := util.SetNotificationConfiguration(&req)
 	if err != nil {
@@ -560,8 +664,9 @@ func HandleSaveNotificationConfiguration(c *fiber.Ctx) error {
 
 func HandleLaunchNotification(c *fiber.Ctx) error {
 	type LaunchNotificationRequest struct {
-		ShopIdentifier string `json:"shop_identifier"`
+		ShopId string `json:"shop_id"`
 		All bool `json:"all"`
+		NotificationConfigurationID string `json:"notification_configuration_id"`
 	}
 
 	var req LaunchNotificationRequest
@@ -573,7 +678,15 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 		})
 	}
 
-	shop, err := util.GetShopFromShopIdentifier(req.ShopIdentifier)
+	if req.ShopId == "" || req.NotificationConfigurationID == "" || !req.All {
+		log.Printf("[ERROR] Shop ID and Notification Configuration ID are required")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"message":   "Shop ID and Notification Configuration ID are required",
+		})
+	}
+
+	shop, err := util.GetShopById(req.ShopId)
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -600,6 +713,15 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 		})
 	}
 
+	config, err := util.GetNotificationConfigurationById(req.NotificationConfigurationID, shop.ID)
+	if err != nil {
+		log.Printf("[ERROR] Error getting notification configuration: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting notification configuration",
+		})
+	}
+
 	if len(subscriptions) == 0 {
 		log.Printf("[ERROR] No subscriptions found")
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -611,11 +733,11 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 	// send push notification
 	for _, subscription := range subscriptions {
 		err := util.SendPushNotification(
-			"New notification!", 
-			"New notification from "+shop.Name,
-			"https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png", // Make customizabe 
-			"https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png", // Make customizabe
-			"https://" + shop.ShopIdentifier, // Make customizabe
+			config.Title,
+			config.Message,
+			config.Icon,
+			config.Badge,
+			config.URL,
 			subscription.ID,
 		)
 		if err != nil {
