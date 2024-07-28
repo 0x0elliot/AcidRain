@@ -64,6 +64,7 @@
     "react-edit-text": "^5.1.1",
     "react-hook-form": "^7.52.1",
     "react-hot-toast": "^2.4.1",
+    "react-json-view": "^1.21.3",
     "react-phone-input-2": "^2.15.1",
     "react-phone-number-input": "^3.4.3",
     "react-router-dom": "^6.23.1",

@@ -8,14 +8,14 @@ import cookies from 'nookies';
 import axios from 'axios';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DashboardStatistics } from "@/components/ui/DashboardStatistics";
+import { DashboardClickerOS } from "@/components/ui/DashboardClickerOS";
 
-export default function Automations() {
+export default function Dashboard() {
   const [shopExists, setShopExists] = React.useState(true);
 
   const [showPopup, setShowPopup] = React.useState(false);
   const [shopName, setShopName] = React.useState("");
-
-  const [notificationTypes, setNotificationTypes] = React.useState(["WhatsApp", "SMS", "Email", "Push"]);
 
   const GetRedirectUrl = async (shopName: string) => {
     const response = await fetch(`${siteConfig.baseApiUrl}/api/user/shopify-oauth?shop=${shopName}`, {
@@ -66,8 +66,7 @@ export default function Automations() {
           setShopExists(false);
         }
       });
-  }
-  , []);
+  }, []);
 
   return (
     <>
@@ -76,16 +75,16 @@ export default function Automations() {
           id="overall-title"
           className="scroll-mt-10 text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50"
         >
-          Configure Automations
+          Campaign Statistics
         </h1>
       </section>
 
-      <section aria-labelledby="flows-description">
+      <section aria-labelledby="flows-description" className="mb-4">
         <p
           id="overall-description"
           className="text-sm text-gray-500 dark:text-gray-400"
         >
-          Configure automations for your shop.
+          View statistics for all your campaigns here.
         </p>
       </section>
 
@@ -165,35 +164,18 @@ export default function Automations() {
         </div>
       )} 
 
-      {/* Add two clickable "tabs" from shadcn */}
-      {/* The first tab should be "Order Automations" */}
-      {/* The second tab should be "Promotion Automations" */}
       {shopExists && (
-      <div className="my-tabs mt-4">
-
-
-      <Tabs defaultValue="push" className="w-[400px]">
-        <TabsList>
-          {notificationTypes.map((type) => (
-            <TabsTrigger key={type} value={type.toLowerCase()}>{type}</TabsTrigger>
-          ))}
-        </TabsList>
-
-        {notificationTypes.map((type) => (
-          <TabsContent key={type} value={type.toLowerCase()}>
-            <div className="p-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                {type} Automations
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Configure {type} automations for your shop.
-              </p>
-            </div>
-          </TabsContent>
-        ))}
-      </Tabs>
-      </div>
-      )}
+        // Shop statistics with shadcn beautiful charts
+        <div className="flex flex-col space-y-4">
+          <DashboardStatistics />
+          <div className="flex flex-col space-y-4">
+            <DashboardClickerOS />
+          </div>
+          <div className="flex flex-col space-y-4">
+            
+          </div>
+        </div>
+      )} 
 
     </>
   )

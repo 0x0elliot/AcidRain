@@ -35,6 +35,8 @@ func SetupNotificationRoutes() {
 
 	privNotification.Post("/notification-configuration", HandleSaveNotificationConfiguration)
 	privNotification.Post("/launch", HandleLaunchNotification)
+
+	privNotification.Get("/notification-campaigns", HandleGetNotificationCampaigns)
 }
 
 type SubscribeToPushRequest struct {
@@ -464,6 +466,7 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 			"https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png", // Make customizabe
 			"https://" + shop.ShopIdentifier, // Make customizabe
 			sub.ID,
+			models.NotificationCampaign{},
 		)
 		if err != nil {
 			log.Printf("[ERROR] Error in sending push notification: %v", err)
@@ -735,6 +738,28 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 		})
 	}
 
+	// this, we will call a campaign
+	campaign := models.NotificationCampaign{
+		ShopID: shop.ID,
+		Shop: shop,
+		NotificationConfigurationID: config.ID,
+		NotificationConfiguration: config,
+	}
+
+	// save campaign
+	campaign, err = util.SetNotificationCampaign(&campaign)
+	if err != nil {
+		log.Printf("[ERROR] Error setting notification campaign: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error setting notification campaign",
+		})
+	}
+
+	log.Printf("[DEBUG] Campaign: %v", campaign)
+	log.Printf("[DEBUG] Campaign Shop: %v", campaign.Shop)
+	log.Printf("[DEBUG] Campaign Notification Configuration: %v", campaign.NotificationConfiguration)
+
 	// send push notification
 	for _, subscription := range subscriptions {
 		err := util.SendPushNotification(
@@ -744,6 +769,7 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 			config.Badge,
 			config.URL,
 			subscription.ID,
+			campaign,
 		)
 		if err != nil {
 			log.Printf("[ERROR] Error in sending push notification: %v", err)
@@ -755,6 +781,88 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 		"message":   "Push notification sent successfully",
 	})
 }
+
+
+func HandleGetNotificationCampaigns(c *fiber.Ctx) error {
+	type GetNotificationCampaignsRequest struct {
+		ShopId string `json:"shop_id"`
+		NotificationCampaignID string `json:"notification_campaign_id"`
+	}
+
+	var req GetNotificationCampaignsRequest
+	req.ShopId = c.Query("shop_id")
+	req.NotificationCampaignID = c.Query("notification_campaign_id")
+
+	shop, err := util.GetShopById(req.ShopId)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Unauthorized access")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"message":   "Unauthorized access",
+		})
+	}
+
+	campaigns, err := util.GetNotificationCampaignsByShopId(shop.ID, req.NotificationCampaignID)
+	if err != nil {
+		log.Printf("[ERROR] Error getting campaigns: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"message":   "Error getting campaigns",
+		})
+	}
+
+	// sanitize
+	for i, _ := range campaigns {
+		campaigns[i].Shop.AccessToken = ""
+	}
+
+	if req.NotificationCampaignID != "" {
+		if len(campaigns) == 0 {
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{
+				"error": false,
+				"message":   "No campaigns found",
+			})
+		} else {
+			// get the notifications sent to this campaign
+			notifications, err := util.GetNotificationsSentByCampaignId(campaigns[0].ID)
+			if err != nil {
+				log.Printf("[ERROR] Error getting notifications: %v", err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": true,
+					"message":   "Error getting notifications",
+				})
+			}
+
+			oldNotifications := notifications
+
+			for i, _ := range oldNotifications {
+				if oldNotifications[i].NotificationCampaign.ShopID != shop.ID {
+					notifications = append(notifications[:i], notifications[i+1:]...)
+				}
+			}
+
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{
+				"error": false,
+				"campaign": campaigns[0],
+				"notifications": notifications,
+			})
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"campaigns": campaigns,
+	})
+}
+
 
 func HandlePushNotification(c *fiber.Ctx) error {
 	type PushNotificationRequest struct {
@@ -796,7 +904,7 @@ func HandlePushNotification(c *fiber.Ctx) error {
 			req.Body = "Test push notification"
 			req.Title = "Test push notification!"
 			// err := util.SendPushNotification(req.Title, req.Body, subscription.ID)
-			err := util.SendPushNotification(req.Title, req.Body, examplePic, examplePic,"http://localhost:3000", subscription.ID) 
+			err := util.SendPushNotification(req.Title, req.Body, examplePic, examplePic,"http://localhost:3000", subscription.ID, models.NotificationCampaign{}) 
 			if err != nil {
 				log.Printf("[ERROR] Error in sending push notification: %v", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

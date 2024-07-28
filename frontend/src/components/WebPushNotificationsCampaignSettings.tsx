@@ -60,7 +60,7 @@ export default function WebPushNotificationsCampaignSettings() {
 
     const requestPermission = async () => {
         if (requestShopSetup) {
-            window.location.href = "/automations";
+            window.location.href = "/dashboard";
             return
         }
 

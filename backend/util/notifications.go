@@ -2,11 +2,13 @@ package util
 
 import (
 	"encoding/json"
-	"go-authentication-boilerplate/models"
 	"log"
 	"os"
+	"io/ioutil"
 
 	webpush "github.com/SherClockHolmes/webpush-go"
+
+	"go-authentication-boilerplate/models"
 )
 
 // the assumption here is that if this function is called, this is the first subscription
@@ -68,7 +70,7 @@ func SubscribeUserToPush(subscription models.NotificationSubscription, userId st
 
 
 // ideally, all "url" should be an analytics redirect URL from our end
-func SendPushNotification(title string, message string, icon string, badge string, url string, subscriptionId string) error {
+func SendPushNotification(title string, message string, icon string, badge string, url string, subscriptionId string, notificationCampaign models.NotificationCampaign) error {	
 	type PushNotificationRequest struct {
 		Body string `json:"body"`
 		Title string `json:"title"`
@@ -110,22 +112,80 @@ func SendPushNotification(title string, message string, icon string, badge strin
 	}
 
 	totalMessage := string(jsonData)
+	var notificationSent models.NotificationsSent
 
-	notif, err := webpush.SendNotification([]byte(totalMessage), &pushSubscription, &webpush.Options{
+	if notificationCampaign.ID != "" {
+		// record the notification
+		notificationSent = models.NotificationsSent{
+			NotificationCampaignID: notificationCampaign.ID,
+			Status: "pending",
+		}
+	}
+
+	notif, errWebPush := webpush.SendNotification([]byte(totalMessage), &pushSubscription, &webpush.Options{
 		Subscriber:      "",
 		VAPIDPublicKey: publicKey,
 		VAPIDPrivateKey: privateKey,
 		TTL:             30,
-	}) 
+	})
 
 	log.Printf("[INFO] Notification: %v", notif)
 
-	if err != nil {
+
+	if notificationCampaign.ID != "" {
+		type Meta struct {
+			Body string `json:"body"`
+			Headers map[string][]string `json:"headers"`
+		}
+
+		var meta Meta
+
+		body, err := ioutil.ReadAll(notif.Body)
+		if err != nil {
+			log.Printf("[ERROR] Error reading notification body: %v", err)
+			meta.Body = "COULD NOT READ BODY -- " + err.Error()
+		} else {
+			meta.Body = string(body)
+		}
+
+		meta.Headers = notif.Header
+		
+		// now, convert all this to a JSON string
+		metaJson, err := json.Marshal(meta)
+		if err != nil {
+			log.Printf("[ERROR] Error marshalling meta: %v", err)
+			return err
+		}
+
+		notificationSent.APIResponse = string(metaJson)
+
+		// now, get all the headers, and store them too
+	
+		notificationSent.APIStatus = notif.StatusCode
+		notificationSent, err = SetNotificationSent(&notificationSent)
+		if err != nil {
+			log.Printf("[ERROR] Error setting notification sent: %v", err)
+		}
+	}
+
+	if errWebPush != nil {
 		log.Printf("[ERROR] Error sending push notification: %v", err)
-		return err
+
+		if notificationCampaign.ID != "" {
+			notificationSent.Status = "failed"
+		}
+
+		return errWebPush
 	}
 
 	log.Printf("[INFO] Push notification sent successfully")
+	if notificationCampaign.ID != "" {
+		notificationSent.Status = "sent"
+		_, err = SetNotificationSent(&notificationSent)
+		if err != nil {
+			log.Printf("[ERROR] Error setting notification sent: %v", err)
+		}
+	}
 
 	return nil
 }

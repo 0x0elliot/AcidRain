@@ -145,6 +145,26 @@ func GetNotificationConfigurationsById(id string) ([]*models.NotificationConfigu
 	return notificationConfigurations, nil
 }	
 
+func GetNotificationSentById(id string) (*models.NotificationsSent, error) {
+	notificationSent := new(models.NotificationsSent)
+	txn := db.DB.Where("id = ?", id).Preload("NotificationCampaign").Preload("NotificationCampaign.NotificationConfiguration").First(notificationSent)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting notification sent: %v", txn.Error)
+		return notificationSent, txn.Error
+	}
+	return notificationSent, nil
+}
+
+func GetNotificationCampaignById(id string) (*models.NotificationCampaign, error) {
+	notificationCampaign := new(models.NotificationCampaign)
+	txn := db.DB.Where("id = ?", id).Preload("NotificationConfiguration").First(notificationCampaign)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting notification campaign: %v", txn.Error)
+		return notificationCampaign, txn.Error
+	}
+	return notificationCampaign, nil
+}
+
 func GetShopFromShopIdentifier(shopIdentifier string) (*models.Shop, error) {
 	shop := new(models.Shop)
 	txn := db.DB.Where("shop_identifier = ?", shopIdentifier).First(shop)
@@ -153,6 +173,32 @@ func GetShopFromShopIdentifier(shopIdentifier string) (*models.Shop, error) {
 		return shop, txn.Error
 	}
 	return shop, nil
+}
+
+func GetNotificationsSentByCampaignId(campaignId string) ([]models.NotificationsSent, error) {
+	notificationsSent := []models.NotificationsSent{}
+	txn := db.DB.Where("notification_campaign_id = ?", campaignId).Preload("NotificationCampaign").Find(&notificationsSent)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting notifications sent: %v", txn.Error)
+		return notificationsSent, txn.Error
+	}
+	return notificationsSent, nil
+}
+
+func GetNotificationCampaignsByShopId(shopId string, notification_campaign_id string) ([]models.NotificationCampaign, error) {
+	notificationCampaigns := []models.NotificationCampaign{}
+	var txn *gorm.DB
+	if notification_campaign_id != "" {
+		txn = db.DB.Where("shop_id = ? AND id = ?", shopId, notification_campaign_id).Preload("Shop").Preload("NotificationConfiguration").Find(&notificationCampaigns)
+	} else {
+		txn = db.DB.Where("shop_id = ?", shopId).Preload("Shop").Preload("NotificationConfiguration").Find(&notificationCampaigns)
+	}
+
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error getting campaigns: %v", txn.Error)
+		return notificationCampaigns, txn.Error
+	}
+	return notificationCampaigns, nil
 }
 
 func GetStoreNotifications(shopId, notificationType string) ([]models.Notification, error) {	
@@ -169,6 +215,28 @@ func GetStoreNotifications(shopId, notificationType string) ([]models.Notificati
 		return notifications, txn.Error
 	}
 	return notifications, nil
+}
+
+func SetTrackedClick(trackedClick *models.TrackedClick) (*models.TrackedClick, error) {
+	// check if tracked click with ID exists
+	if trackedClick.ID == "" {
+		trackedClick.CreatedAt = db.DB.NowFunc().String()
+		trackedClick.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Omit("NotificationCampaign").Create(trackedClick)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error creating tracked click: %v", txn.Error)
+			return trackedClick, txn.Error
+		}
+	} else {
+		trackedClick.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Omit("NotificationCampaign").Save(trackedClick)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error saving tracked click: %v", txn.Error)
+			return trackedClick, txn.Error
+		}
+	}
+
+	return trackedClick, nil
 }
 
 func SetNotification(notification *models.Notification) (*models.Notification, error) {
@@ -274,7 +342,7 @@ func SetNotficationSubscription(subscription models.NotificationSubscription) (m
 		}
 	} else {
 		subscription.UpdatedAt = db.DB.NowFunc().String()
-		txn := db.DB.Save(&subscription)
+		txn := db.DB.Omit("Shop").Save(&subscription)
 		if txn.Error != nil {
 			log.Printf("[ERROR] Error saving subscription: %v", txn.Error)
 			return subscription, txn.Error
@@ -282,6 +350,50 @@ func SetNotficationSubscription(subscription models.NotificationSubscription) (m
 	}
 
 	return subscription, nil
+}
+
+func SetNotificationCampaign(notificationCampaign *models.NotificationCampaign) (models.NotificationCampaign, error) {
+	// check if notificationCampaign with ID exists
+	if notificationCampaign.ID == "" {
+		notificationCampaign.ID = uuid.New().String()
+		notificationCampaign.CreatedAt = db.DB.NowFunc().String()
+		notificationCampaign.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Omit("NotificationConfiguration", "Shop").Create(notificationCampaign)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error creating notification campaign: %v", txn.Error)
+			return *notificationCampaign, txn.Error
+		}
+	} else {
+		notificationCampaign.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Omit("NotificationConfiguration", "Shop").Save(notificationCampaign)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error saving notification campaign: %v", txn.Error)
+			return *notificationCampaign, txn.Error
+		}
+	}
+
+	return *notificationCampaign, nil
+}
+
+func SetNotificationSent(notificationSent *models.NotificationsSent) (models.NotificationsSent, error) {
+	if notificationSent.ID == "" {
+		notificationSent.CreatedAt = db.DB.NowFunc().String()
+		notificationSent.UpdatedAt = db.DB.NowFunc().String()
+		txn := db.DB.Omit("NotificationCampaign").Create(notificationSent)
+		if txn.Error != nil {
+			log.Printf("[ERROR] Error creating notification sent: %v", txn.Error)
+			return *notificationSent, txn.Error
+		}
+	} 
+
+	notificationSent.UpdatedAt = db.DB.NowFunc().String()
+	txn := db.DB.Omit("NotificationCampaign").Save(notificationSent)
+	if txn.Error != nil {
+		log.Printf("[ERROR] Error saving notification sent: %v", txn.Error)
+		return *notificationSent, txn.Error
+	}
+
+	return *notificationSent, nil
 }
 
 func DeleteAllUserOwnedNotificationSubscriptions(ownerID string) error {

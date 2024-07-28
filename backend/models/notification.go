@@ -13,6 +13,31 @@ type Notification struct {
 	Configured bool `json:"configured"`
 }
 
+// everytime a campaign is launched, a new record is created
+type NotificationCampaign struct {
+	Base
+	// why not lol, it's not like i have any users
+	ShopID string `json:"shop_id"`
+	Shop *Shop `json:"shop" gorm:"foreignKey:ShopID;references:ID;"`
+	
+	NotificationConfigurationID string `json:"notification_configuration_id"`
+	NotificationConfiguration *NotificationConfiguration `json:"notification_configuration" gorm:"foreignKey:NotificationConfigurationID;references:ID;"`
+}
+
+type NotificationsSent struct {
+	Base
+
+	// quick access
+	NotificationCampaignID string `json:"notification_campaign_id"`
+	NotificationCampaign *NotificationCampaign `json:"notification_campaign" gorm:"foreignKey:NotificationCampaignID;references:ID;"`
+
+	// for identifying issues
+	Status string `json:"status"` // sent, failed, pending
+	APIResponse string `json:"api_response"` // headers in the case of web push
+	APIStatus int `json:"api_status"`
+}
+
+
 // primarily just for Web Push Notifications
 type NotificationConfiguration struct {
 	Base
@@ -23,15 +48,6 @@ type NotificationConfiguration struct {
 	URL string `json:"url"`
 	Icon string `json:"icon"`
 	Badge string `json:"badge"`
-}
-
-type NotificationsSent struct {
-	Base
-	NotificationID string `json:"notification_id"`
-	NotificationSubscriptionID string `json:"notification_subscription_id"`
-	NotificationStatus string `json:"notification_status"`
-	NotificationConfigurationID string `json:"notification_configuration_id"`
-	NotificationConfiguration NotificationConfiguration `json:"notification_configuration" gorm:"foreignKey:NotificationConfigurationID;references:ID;"`
 }
 
 type NotificationSubscription struct {

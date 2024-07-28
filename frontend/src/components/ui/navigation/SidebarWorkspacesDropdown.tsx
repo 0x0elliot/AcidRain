@@ -11,21 +11,22 @@ import {
 } from "@/components/Dropdown"
 import { cx, focusInput } from "@/lib/utils"
 import { RiArrowRightSLine, RiExpandUpDownLine } from "@remixicon/react"
-import React from "react"
+import React, { useEffect } from "react"
 import { ModalAddWorkspace } from "./ModalAddWorkspace"
 
-const workspaces = [
-  {
-    value: "retail-analytics",
-    name: "Organization",
-    initials: "ORG",
-    role: "Member",
-    color: "bg-orange-600 dark:bg-orange-500",
-  },
-  // Add more workspaces...
-]
+// const workspaces = [
+//   {
+//     value: "retail-analytics",
+//     name: "Shop",
+//     initials: "SHOP",
+//     role: "Member",
+//     color: "bg-orange-600 dark:bg-orange-500",
+//   },
+//   // Add more workspaces...
+// ]
 
-export const WorkspacesDropdownDesktop = () => {
+export const WorkspacesDropdownDesktop = ( { workspaces } ) => {
+  const [newWorkspaces, setNewWorkspaces] = React.useState(workspaces)
   const [dropdownOpen, setDropdownOpen] = React.useState(false)
   const [hasOpenDialog, setHasOpenDialog] = React.useState(false)
   const dropdownTriggerRef = React.useRef<null | HTMLButtonElement>(null)
@@ -41,6 +42,14 @@ export const WorkspacesDropdownDesktop = () => {
       setDropdownOpen(false)
     }
   }
+
+  useEffect(() => {
+    console.log('workspaces changed', workspaces);
+    setNewWorkspaces(workspaces);
+  }
+  , [workspaces])
+
+
   return (
     <>
       {/* sidebar (lg+) */}
@@ -60,16 +69,16 @@ export const WorkspacesDropdownDesktop = () => {
               className="flex aspect-square size-8 items-center justify-center rounded bg-orange-600 p-2 text-xs font-medium text-white dark:bg-orange-500"
               aria-hidden="true"
             >
-              ORG
+              {newWorkspaces[0].initials}
             </span>
             <div className="flex w-full items-center justify-between gap-x-4 truncate">
               <div className="truncate">
                 <p className="truncate whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-50">
-                  Organization
+                  {newWorkspaces[0].name}
                 </p>
-                <p className="whitespace-nowrap text-left text-xs text-gray-700 dark:text-gray-300">
+                {/* <p className="whitespace-nowrap text-left text-xs text-gray-700 dark:text-gray-300">
                   Member
-                </p>
+                </p> */}
               </div>
               <RiExpandUpDownLine
                 className="size-5 shrink-0 text-gray-500"
@@ -128,7 +137,9 @@ export const WorkspacesDropdownDesktop = () => {
   )
 }
 
-export const WorkspacesDropdownMobile = () => {
+export const WorkspacesDropdownMobile = ( { workspaces } ) => {
+  const [newWorkspaces, setNewWorkspaces] = React.useState(workspaces)
+
   const [dropdownOpen, setDropdownOpen] = React.useState(false)
   const [hasOpenDialog, setHasOpenDialog] = React.useState(false)
   const dropdownTriggerRef = React.useRef<null | HTMLButtonElement>(null)
@@ -144,6 +155,12 @@ export const WorkspacesDropdownMobile = () => {
       setDropdownOpen(false)
     }
   }
+
+  useEffect(() => {
+    console.log('workspaces changed', workspaces);
+    setNewWorkspaces(workspaces);
+  }, [workspaces])
+
   return (
     <>
       {/* sidebar (xs-lg) */}
@@ -160,7 +177,7 @@ export const WorkspacesDropdownMobile = () => {
               )}
               aria-hidden="true"
             >
-              ORG
+              {newWorkspaces[0].initials}
             </span>
             <RiArrowRightSLine
               className="size-4 shrink-0 text-gray-500"
@@ -168,7 +185,7 @@ export const WorkspacesDropdownMobile = () => {
             />
             <div className="flex w-full items-center justify-between gap-x-3 truncate">
               <p className="truncate whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-50">
-                Organization
+                {newWorkspaces[0].name}
               </p>
               <RiExpandUpDownLine
                 className="size-4 shrink-0 text-gray-500"

@@ -71,6 +71,9 @@ func ConnectToDB() {
 		&models.Shop{},
 		&models.Notification{},
 		&models.NotificationConfiguration{},
+		&models.NotificationCampaign{},
+		&models.NotificationsSent{},
+		&models.TrackedClick{},
 		&models.NotificationSubscription{},
 		&models.TrackedUser{},
 	)

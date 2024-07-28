@@ -17,7 +17,7 @@ export default function NotFound() {
         Sorry, we couldn’t find the page you’re looking for.
       </p>
       <Button asChild className="group mt-8" variant="light">
-        <Link href={siteConfig.baseLinks.home}>
+        <Link href={siteConfig.baseLinks.dashboard}>
           Go to the home page
           <RiArrowRightLine
             className="ml-1.5 size-5 text-gray-900 dark:text-gray-50"

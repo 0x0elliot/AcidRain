@@ -251,6 +251,13 @@ export default function QuickWebPushCampaign() {
                             >
                                 Select
                             </Button>
+
+                            <Button
+                                className="text-white bg-black hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium text-sm px-5 py-2.5 text-center dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:focus:ring-gray-400 disabled:opacity-50 ml-2"
+                                onClick={() => setSegmentSelectionModalOpen(false)}
+                            >
+                                Close
+                            </Button>
                         </div>
                     </div>
                 </div>

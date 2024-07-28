@@ -21,7 +21,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const navigation = [
-  { name: "Automations", href: siteConfig.baseLinks.automations, icon: RiHome2Line },
+  { name: "Dashboard", href: siteConfig.baseLinks.dashboard, icon: RiHome2Line },
   {
     name: "Discord",
     href: "https://discord.gg/y6yPVWjdD9",
@@ -80,7 +80,9 @@ export default function MobileSidebar() {
         </DrawerTrigger>
         <DrawerContent className="sm:max-w-lg">
           <DrawerHeader>
-            <DrawerTitle>Organization</DrawerTitle>
+            <DrawerTitle>
+              { "Shop" }
+            </DrawerTitle>
           </DrawerHeader>
           <DrawerBody>
             <nav
