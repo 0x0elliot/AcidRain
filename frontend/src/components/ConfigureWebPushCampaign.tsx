@@ -160,10 +160,10 @@ export default function ConfigureWebPushCampaign({ onClose, existingConfiguratio
                         badge: badge || undefined,
                     });
 
-                    // Add click event to open URL in a new window
-                    notification.onclick = function (event) {
-                        event.preventDefault(); // Prevent the browser from focusing the Notification's tab
-                        if (url) {
+                    if (url) {
+                        console.log("Notification URL:", url);
+                        notification.onclick = function (event) {
+                            event.preventDefault(); // Prevent the browser from focusing the Notification's tab
                             window.open(url, '_blank');
                         }
                     }

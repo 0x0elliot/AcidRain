@@ -73,7 +73,8 @@ export default function WebPushNotificationsCampaignSettings() {
 
     const registerServiceWorker = async () => {
         try {
-            const registration = await navigator.serviceWorker.register('/service-worker.js');
+            // const registration = await navigator.serviceWorker.register('/service-worker.js');
+            const registration = await navigator.serviceWorker.register(`${siteConfig.baseApiUrl}/public/service-worker.js`);
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: 'BCv7WgVIIGsZfgamKaruQEach2j6a8Us5en7Y2FIuC7PUt9aQxd2Nl2d5XIj80cfgs37DA6OE3TS1GOebJs0UTo'

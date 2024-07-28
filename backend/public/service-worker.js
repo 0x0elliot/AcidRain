@@ -18,6 +18,8 @@ self.addEventListener('push', function(event) {
 });
 
 self.addEventListener('notificationclick', function(event) {
-    clients.openWindow(event.notification.data.url);
+    if (event.notification.data?.url) {
+        clients.openWindow(event.notification.data.url);
+    }
 }, false);
 

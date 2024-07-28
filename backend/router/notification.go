@@ -5,13 +5,14 @@ import (
 	auth "go-authentication-boilerplate/auth"
 	models "go-authentication-boilerplate/models"
 	util "go-authentication-boilerplate/util"
+	"strings"
 
 	"log"
 	// "strings"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
 	"cloud.google.com/go/storage"
+	"github.com/gofiber/fiber/v2"
 )
 
 func SetupNotificationRoutes() {
@@ -585,6 +586,10 @@ func HandleSaveNotificationConfiguration(c *fiber.Ctx) error {
 			"error": true,
 			"message":   "Unauthorized access",
 		})
+	}
+
+	if (req.URL == "" || strings.HasPrefix(req.URL, "http://") || strings.HasPrefix(req.URL, "https://")) {
+		req.URL = "https://" + shop.ShopIdentifier
 	}
 
 	// if configuration Icon and Badge are not empty AND they are base64 encoded
