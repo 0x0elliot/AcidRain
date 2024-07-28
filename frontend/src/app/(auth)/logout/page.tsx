@@ -30,6 +30,7 @@ export default function Logout() {
       localStorage.removeItem("userinfo");
       destroyCookie(null, "access_token");
       destroyCookie(null, "refresh_token");
+      localStorage.removeItem("notification_configuration");
     } catch (e) {
       console.error(e);
     }
