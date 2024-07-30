@@ -15,6 +15,7 @@ import cookies from 'nookies';
 
 export default function Campaigns() {
     const [shops, setShops] = React.useState([]);
+    const [userinfo, setUserinfo] = React.useState({});
 
     const [historyModal, setHistoryModal] = React.useState(false);
 
@@ -22,6 +23,16 @@ export default function Campaigns() {
         document.title = "Quick Campaigns | Dashboard"
 
         let accessToken_ = cookies.get(null).access_token;
+
+        let userinfo = {};
+        let userinfoStr = localStorage.getItem('userinfo');
+        if (userinfoStr) {
+            try {
+                userinfo = JSON.parse(userinfoStr);
+            } catch (e) {
+                window.location.href = "/logout";
+            }
+        }
 
         // get /api/shop/private/all
         fetch(`${siteConfig.baseApiUrl}/api/shop/private/all`, {
@@ -64,8 +75,8 @@ export default function Campaigns() {
             </section>
             {/* Open CampaignHistory modal */}
             { historyModal && <CampaignHistory onClose={() => setHistoryModal(false)} isOpen={historyModal} /> }
-
-
+            
+            { shops.length !== 0 ? (
             <div className="my-tabs mt-4">
                 <div className="w-[400px]">
                     {notificationTypes.map((type) => (
@@ -109,7 +120,26 @@ export default function Campaigns() {
                             </div>
                     ))}
                         </div>
-            </div>
+            </div>) : (
+                <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md text-center">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                            Create a shop first!
+                        </h2>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                            You need to create a shop from the dashboard before you can view campaign history.
+                        </p>
+                        <Button
+                            className="text-white bg-black hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium text-sm px-5 py-2.5 text-center dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:focus:ring-gray-400"
+                            onClick={() => {
+                                window.location.href = "/dashboard";
+                            }}
+                        >
+                            Go to Dashboard
+                        </Button>
+                    </div>
+                </div>
+            )}
 
 
             </>

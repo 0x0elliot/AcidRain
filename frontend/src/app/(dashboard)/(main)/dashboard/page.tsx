@@ -16,6 +16,7 @@ export default function Dashboard() {
 
   const [showPopup, setShowPopup] = React.useState(false);
   const [shopName, setShopName] = React.useState("");
+  const [userinfo, setUserinfo] = React.useState({});
 
   const GetRedirectUrl = async (shopName: string) => {
     const response = await fetch(`${siteConfig.baseApiUrl}/api/user/shopify-oauth?shop=${shopName}`, {
@@ -49,6 +50,7 @@ export default function Dashboard() {
       },
     }).then((response) => {
       localStorage.setItem('userinfo', JSON.stringify(response.data));
+      setUserinfo(response.data);
     });
 
     fetch(`${siteConfig.baseApiUrl}/api/shop/private/all`, {
@@ -101,7 +103,7 @@ export default function Dashboard() {
           </div>
           <div className="mt-2">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Add a shop to get started with your automations.
+              Add a shop and install the shopify app to get started.
             </p>
           </div>
           <div className="mt-4">
@@ -164,7 +166,7 @@ export default function Dashboard() {
         </div>
       )} 
 
-      {shopExists && (
+      {(userinfo?.current_shop_id && shopExists) && (
         // Shop statistics with shadcn beautiful charts
         <div className="flex flex-col space-y-4">
           <DashboardStatistics />
