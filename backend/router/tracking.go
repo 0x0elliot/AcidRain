@@ -155,18 +155,23 @@ func HandleTrackClick(c *fiber.Ctx) error {
 	// just forward user to notification_campaign.URL, save the click info as well
 
 	// get the notification_campaign_id
-	notification_sent_id := c.Query("notifications_sent_id")
-	notificationSent, err := util.GetNotificationSentById(notification_sent_id)
-	if err != nil {
-		log.Printf("[ERROR] Error getting notification sent: %v -- %v", notification_sent_id, err)
+	notification_campaign_id := c.Query("notification_campaign_id")
+	if notification_campaign_id == "" {
+		log.Printf("[ERROR] Notification Campaign ID is required")
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   true,
-			"message": "Error getting notification sent",
+			"message": "Notification Campaign ID is required",
 		})
 	}
 
-	notificationCampaign := notificationSent.NotificationCampaign
-
+	notificationCampaign, err := util.GetNotificationCampaignById(notification_campaign_id)
+	if err != nil {
+		log.Printf("[ERROR] Error getting notification campaign: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": "Error getting notification campaign",
+		})
+	}
 
 	headers := c.Request().Header
 

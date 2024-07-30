@@ -96,6 +96,11 @@ func SendPushNotification(title string, message string, icon string, badge strin
 		},
 	}
 
+	if notificationCampaign.ID != "" {
+		// localhost:5002/api/tracking/redirect/click?notifications_sent_id=5e34818e-8606-44d8-bf4b-e25b7326b431
+		url = os.Getenv("ACIDRAIN_API_URL") + "/api/tracking/redirect/click?notification_campaign_id=" + notificationCampaign.ID
+	}
+
 	totalMessageStruct := PushNotificationRequest{
 		Body: message,
 		Title: title,
