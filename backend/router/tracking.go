@@ -20,6 +20,7 @@ func SetupTrackingRoutes() {
 	privTracking := TRACKING.Group("/private")
 	privTracking.Use(auth.SecureAuth()) // middleware to secure all routes for this group
 	privTracking.Get("/stats/devices", HandleGetCampaignStatistics)
+	privTracking.Get("/stats/os", HandleOSClickStats)
 }
 
 func HandleGetCampaignStatistics(c *fiber.Ctx) error {
@@ -54,8 +55,16 @@ func HandleGetCampaignStatistics(c *fiber.Ctx) error {
 		log.Printf("[ERROR] Start and End dates not given. Defaulting to 1st April 2024 to 4th April 2024")
 	}
 
-	startDate := time.Date(2024, 7, 1, 0, 0, 0, 0, time.UTC)
-	endDate := time.Date(2024, 8, 4, 23, 59, 59, 999999999, time.UTC)
+	// startDate := time.Date(2024, 7, 1, 0, 0, 0, 0, time.UTC)
+	// endDate := time.Date(2024, 8, 4, 23, 59, 59, 999999999, time.UTC)
+	var startDate time.Time
+	var endDate time.Time
+
+	if c.Query("start") == "" || c.Query("end") == "" {
+		startDate = time.Now().AddDate(0, -3, 0)
+		endDate = time.Now()
+	}
+
 
 	stats, err := util.FetchClickStats(
 		c.Query("shop_id"),
@@ -82,6 +91,63 @@ func HandleGetCampaignStatistics(c *fiber.Ctx) error {
 	})
 }
 
+func HandleOSClickStats(c *fiber.Ctx) error {
+	shopID := c.Query("shop_id")
+
+	if shopID == "" {
+		log.Printf("[ERROR] Shop ID is required")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": "Shop ID is required",
+		})
+	}
+
+	shop, err := util.GetShopById(shopID)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Shop does not belong to user")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error":   true,
+			"message": "Shop does not belong to user",
+		})
+	}
+
+	var startDate time.Time
+	var endDate time.Time
+
+	if c.Query("start") == "" || c.Query("end") == "" {
+		log.Printf("[ERROR] Start and End dates not given. Defaulting to 1st April 2024 to 4th April 2024")
+		// startDate is 3 months ago
+		startDate = time.Now().AddDate(0, -3, 0)
+		endDate = time.Now()
+	}
+
+	stats, err := util.FetchOSChartData(
+		c.Query("shop_id"),
+		startDate,
+		endDate,
+	)
+
+	if err != nil {
+		log.Printf("[ERROR] Error fetching stats: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   true,
+			"message": "Error fetching stats",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"stats": stats,
+	})
+}
 
 func HandleTrackClick(c *fiber.Ctx) error {
 	// this is just a forward function. it is supposed
@@ -117,7 +183,7 @@ func HandleTrackClick(c *fiber.Ctx) error {
 	click.ClickUserAgent = userAgent
 
 	// guess the device from the user agent
-	click.ClickOS = strings.ToLower(util.GetUserAgentDeviceType(userAgent))
+	click.ClickOS = strings.ToLower(util.GetUserAgentOS(userAgent))
 	click.ClickDevice = strings.ToLower(util.GetUserAgentDeviceType(userAgent))
 
 	_, err = util.SetTrackedClick(click)

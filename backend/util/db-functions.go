@@ -4,6 +4,8 @@ import (
 	db "go-authentication-boilerplate/database"
 	models "go-authentication-boilerplate/models"
 	"log"
+	"math/rand"
+
 	// "strings"
 	"time"
 
@@ -177,6 +179,74 @@ func GetShopFromShopIdentifier(shopIdentifier string) (*models.Shop, error) {
 	return shop, nil
 }
 
+func FetchNotificationCampaignData(shopID string, startDate time.Time, endDate time.Time) ([]models.CampaignStatistics, error) {
+    var results []models.CampaignStatistics
+
+    err := db.DB.Table("notification_campaigns").
+        Select("notification_configurations.url, COUNT(tracked_clicks.id) as visitors, notification_campaigns.id as notification_campaign_id").
+        Joins("JOIN notification_configurations ON notification_campaigns.notification_configuration_id = notification_configurations.id").
+        Joins("LEFT JOIN tracked_clicks ON notification_campaigns.id = tracked_clicks.notification_campaign_id").
+        Where("notification_campaigns.shop_id = ?", shopID).
+		Where("tracked_clicks.created_at BETWEEN ? AND ?", startDate.Format("2006-01-02"), endDate.Format("2006-01-02")).
+        Group("notification_campaigns.id, notification_configurations.url").
+        Scan(&results).Error
+
+    if err != nil {
+        return nil, err
+    }
+
+    // Add random fill colors
+    colors := []string{"#E2366F", "#2761D8", "#AF56DB", "#2DB78A", "#FF8C00"}
+    for i := range results {
+        results[i].Fill = colors[rand.Intn(len(colors))]
+    }
+
+	if len(results) == 0 {
+		results = []models.CampaignStatistics{}
+	}
+
+    return results, nil
+}
+
+func FetchOSChartData(shopID string, startDate time.Time, endDate time.Time) ([]models.OSChartData, error) {
+    var results []models.OSChartData
+
+    err := db.DB.Table("tracked_clicks").
+        Select("CASE " +
+            "WHEN click_os = 'linux' THEN 'linux' " +
+            "WHEN click_os = 'macos' THEN 'macos' " +
+            "WHEN click_os = 'windows' THEN 'windows' " +
+            "ELSE 'other' END AS os, " +
+            "COUNT(*) as visitors").
+        Joins("JOIN notification_campaigns ON tracked_clicks.notification_campaign_id = notification_campaigns.id").
+        Where("notification_campaigns.shop_id = ? AND tracked_clicks.created_at BETWEEN ? AND ?", shopID, startDate.Format("2006-01-02"), endDate.Format("2006-01-02")).
+        Group("os").
+        Order("visitors DESC").
+        Scan(&results).Error
+
+    if err != nil {
+        return nil, err
+    }
+
+    // Add fill colors
+    colors := map[string]string{
+        "linux":   "#E2366F",
+        "macos":   "#2761D8",
+        "windows": "#AF56DB",
+        "other":   "#2DB78A",
+    }
+
+    for i := range results {
+        results[i].Fill = colors[results[i].OS]
+    }
+
+	if len(results) == 0 {
+		results = []models.OSChartData{}
+	}
+
+    return results, nil
+}
+
 func FetchClickStats(shopID string, startDate time.Time, endDate time.Time) ([]models.DailyClickStats, error) {
     var results []models.DailyClickStats
 
@@ -193,6 +263,10 @@ func FetchClickStats(shopID string, startDate time.Time, endDate time.Time) ([]m
 	if err != nil {
 		log.Printf("[ERROR] Error fetching click stats: %v", err)
 		return nil, err
+	}
+
+	if len(results) == 0 {
+		results = []models.DailyClickStats{}
 	}
 
 	return results, nil

@@ -24,6 +24,14 @@ type NotificationCampaign struct {
 	NotificationConfiguration *NotificationConfiguration `json:"notification_configuration" gorm:"foreignKey:NotificationConfigurationID;references:ID;"`
 }
 
+// not a db model
+type CampaignStatistics struct {
+    URL                    string `json:"url"`
+    Visitors               int    `json:"visitors"`
+    NotificationCampaignID string `json:"notification_campaign_id"`
+    Fill                   string `json:"fill"`
+}
+
 type NotificationsSent struct {
 	Base
 

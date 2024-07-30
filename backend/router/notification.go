@@ -6,6 +6,7 @@ import (
 	models "go-authentication-boilerplate/models"
 	util "go-authentication-boilerplate/util"
 	"strings"
+	"time"
 
 	"log"
 	"os"
@@ -36,7 +37,9 @@ func SetupNotificationRoutes() {
 	privNotification.Post("/launch", HandleLaunchNotification)
 
 	privNotification.Get("/notification-campaigns", HandleGetNotificationCampaigns)
+	privNotification.Get("/statistics/campaigns", HandleCampaignClicksStatistics)
 }
+
 
 type SubscribeToPushRequest struct {
 	Endpoint       string `json:"endpoint"`
@@ -930,3 +933,58 @@ func HandlePushNotification(c *fiber.Ctx) error {
 		"message": "Push notification sent successfully",
 	})
 }
+
+func HandleCampaignClicksStatistics(c *fiber.Ctx) error {
+	type CampaignClicksStatisticsRequest struct {
+		ShopId string `json:"shop_id"`
+	}
+
+	var req CampaignClicksStatisticsRequest
+	req.ShopId = c.Query("shop_id")
+
+	shop, err := util.GetShopById(req.ShopId)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   true,
+			"message": "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Unauthorized access")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error":   true,
+			"message": "Unauthorized access",
+		})
+	}
+
+	startDateStr := c.Query("start_date")
+	endDateStr := c.Query("end_date")
+
+	var startDate time.Time
+	var endDate time.Time
+
+	if startDateStr == "" || endDateStr == "" {
+		log.Printf("[ERROR] Start date and end date are required")
+		// startDate := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC) // start date is 3 months ago
+		startDate = time.Now().AddDate(0, -3, 0)
+		endDate = time.Now()
+	}
+
+	campaignData, err := util.FetchNotificationCampaignData(req.ShopId, startDate, endDate)
+	if err != nil {
+		log.Printf("[ERROR] Error fetching campaign data: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   true,
+			"message": "Error fetching campaign data",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error":   false,
+		"stats": campaignData,
+	})
+}
+
+

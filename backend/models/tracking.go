@@ -21,6 +21,13 @@ type DailyClickStats struct {
 	Mobile  int    `json:"mobile"`
 }
 
+// not a db model
+type OSChartData struct {
+    OS       string `json:"os"`
+    Visitors int    `json:"visitors"`
+    Fill     string `json:"fill"`
+}
+
 type TrackedClick struct {
 	Base
 	NotificationCampaignID string               `json:"notification_campaign_id"`
