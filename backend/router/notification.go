@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"log"
-	// "strings"
 	"os"
 
 	"cloud.google.com/go/storage"
@@ -40,19 +39,19 @@ func SetupNotificationRoutes() {
 }
 
 type SubscribeToPushRequest struct {
-	Endpoint string `json:"endpoint"`
-	ExpirationTime int64 `json:"expirationTime"`
-	Keys struct {
+	Endpoint       string `json:"endpoint"`
+	ExpirationTime int64  `json:"expirationTime"`
+	Keys           struct {
 		P256dh string `json:"p256dh"`
-		Auth string `json:"auth"`
+		Auth   string `json:"auth"`
 	} `json:"keys"`
 }
 
 func HandlePublicSync(c *fiber.Ctx) error {
 	type PublicSyncRequest struct {
 		Subscription SubscribeToPushRequest `json:"subscription"`
-		StoreUrl string `json:"storeUrl"`
-		Customer struct {
+		StoreUrl     string                 `json:"storeUrl"`
+		Customer     struct {
 			Cid int64 `json:"cid"`
 		} `json:"customer"`
 	}
@@ -61,8 +60,8 @@ func HandlePublicSync(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		log.Printf("[ERROR] Error in parsing request body: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error parsing request body",
+			"error":   true,
+			"message": "Error parsing request body",
 		})
 	}
 
@@ -70,8 +69,8 @@ func HandlePublicSync(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting shop",
+			"error":   true,
+			"message": "Error getting shop",
 		})
 	}
 
@@ -80,8 +79,8 @@ func HandlePublicSync(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting subscription: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting subscription",
+			"error":   true,
+			"message": "Error getting subscription",
 		})
 	}
 
@@ -91,8 +90,8 @@ func HandlePublicSync(c *fiber.Ctx) error {
 	if subscription.ShopID != shop.ID {
 		log.Printf("[ERROR] Unauthorized access")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": true,
-			"message":   "Unauthorized access",
+			"error":   true,
+			"message": "Unauthorized access",
 		})
 	}
 
@@ -104,8 +103,8 @@ func HandlePublicSync(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error setting subscription: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error setting subscription",
+			"error":   true,
+			"message": "Error setting subscription",
 		})
 	}
 
@@ -125,15 +124,15 @@ func HandlePublicSync(c *fiber.Ctx) error {
 		if err != nil {
 			log.Printf("[ERROR] Error appending customer id to subscription: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": true,
-				"message":   "Error appending customer id to subscription",
+				"error":   true,
+				"message": "Error appending customer id to subscription",
 			})
 		}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
-		"message":   "Subscription updated successfully",
+		"error":   false,
+		"message": "Subscription updated successfully",
 	})
 }
 
@@ -150,16 +149,16 @@ func HandleGetNotifications(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting shop",
+			"error":   true,
+			"message": "Error getting shop",
 		})
 	}
 
 	if shop.OwnerID != c.Locals("id").(string) {
 		log.Printf("[ERROR] Unauthorized access")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": true,
-			"message":   "Unauthorized access",
+			"error":   true,
+			"message": "Unauthorized access",
 		})
 	}
 
@@ -167,13 +166,13 @@ func HandleGetNotifications(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting notifications: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting notifications",
+			"error":   true,
+			"message": "Error getting notifications",
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
+		"error":         false,
 		"notifications": notifications,
 	})
 }
@@ -181,7 +180,7 @@ func HandleGetNotifications(c *fiber.Ctx) error {
 func HandleGetPushSubscribers(c *fiber.Ctx) error {
 	type GetPushSubscribersRequest struct {
 		ShopIdentifier string `json:"shop_identifier"`
-		CountOnly bool `json:"count_only"`
+		CountOnly      bool   `json:"count_only"`
 	}
 
 	var req GetPushSubscribersRequest
@@ -193,16 +192,16 @@ func HandleGetPushSubscribers(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting shop",
+			"error":   true,
+			"message": "Error getting shop",
 		})
 	}
 
 	if shop.OwnerID != c.Locals("id").(string) {
 		log.Printf("[ERROR] Unauthorized access")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": true,
-			"message":   "Unauthorized access",
+			"error":   true,
+			"message": "Unauthorized access",
 		})
 	}
 
@@ -211,8 +210,8 @@ func HandleGetPushSubscribers(c *fiber.Ctx) error {
 		if err != nil {
 			log.Printf("[ERROR] Error getting subscription count: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": true,
-				"message":   "Error getting subscription count",
+				"error":   true,
+				"message": "Error getting subscription count",
 			})
 		}
 
@@ -226,8 +225,8 @@ func HandleGetPushSubscribers(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting subscriptions: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting subscriptions",
+			"error":   true,
+			"message": "Error getting subscriptions",
 		})
 	}
 
@@ -242,7 +241,7 @@ func HandleGetPushSubscribers(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
+		"error":         false,
 		"subscriptions": subscriptions,
 	})
 }
@@ -256,8 +255,8 @@ func HandleDisablePushNotifications(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		log.Printf("[ERROR] Error in parsing request body: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error parsing request body",
+			"error":   true,
+			"message": "Error parsing request body",
 		})
 	}
 
@@ -265,16 +264,16 @@ func HandleDisablePushNotifications(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting shop",
+			"error":   true,
+			"message": "Error getting shop",
 		})
 	}
 
 	if shop.OwnerID != c.Locals("id").(string) {
 		log.Printf("[ERROR] Unauthorized access")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": true,
-			"message":   "Unauthorized access",
+			"error":   true,
+			"message": "Unauthorized access",
 		})
 	}
 
@@ -282,15 +281,15 @@ func HandleDisablePushNotifications(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting notifications: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting notifications",
+			"error":   true,
+			"message": "Error getting notifications",
 		})
 	}
 
 	if len(notifs) == 0 {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"error": false,
-			"message":   "Push notifications already disabled for this store",
+			"error":   false,
+			"message": "Push notifications already disabled for this store",
 		})
 	}
 
@@ -299,15 +298,15 @@ func HandleDisablePushNotifications(c *fiber.Ctx) error {
 		if err != nil {
 			log.Printf("[ERROR] Error deleting notification: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": true,
-				"message":   "Error deleting notification",
+				"error":   true,
+				"message": "Error deleting notification",
 			})
 		}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
-		"message":   "Push notifications disabled successfully",
+		"error":   false,
+		"message": "Push notifications disabled successfully",
 	})
 }
 func HandleEnablePushNotifications(c *fiber.Ctx) error {
@@ -319,8 +318,8 @@ func HandleEnablePushNotifications(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		log.Printf("[ERROR] Error in parsing request body: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error parsing request body",
+			"error":   true,
+			"message": "Error parsing request body",
 		})
 	}
 
@@ -328,16 +327,16 @@ func HandleEnablePushNotifications(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting shop",
+			"error":   true,
+			"message": "Error getting shop",
 		})
 	}
 
 	if shop.OwnerID != c.Locals("id").(string) {
 		log.Printf("[ERROR] Unauthorized access")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": true,
-			"message":   "Unauthorized access",
+			"error":   true,
+			"message": "Unauthorized access",
 		})
 	}
 
@@ -345,15 +344,15 @@ func HandleEnablePushNotifications(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting notifications: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting notifications",
+			"error":   true,
+			"message": "Error getting notifications",
 		})
 	}
 
 	if len(notifs) > 0 {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"error": false,
-			"message":   "Push notifications already enabled for this store",
+			"error":   false,
+			"message": "Push notifications already enabled for this store",
 		})
 	}
 
@@ -368,23 +367,22 @@ func HandleEnablePushNotifications(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error setting notification: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error setting notification",
+			"error":   true,
+			"message": "Error setting notification",
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
-		"message":   "Push notifications enabled successfully",
+		"error":   false,
+		"message": "Push notifications enabled successfully",
 	})
 }
-
 
 func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	type PublicSubscribeToPushRequest struct {
 		Subscription SubscribeToPushRequest `json:"subscription"`
-		StoreUrl string `json:"storeUrl"`
-		Customer struct {
+		StoreUrl     string                 `json:"storeUrl"`
+		Customer     struct {
 			Cid int64 `json:"cid"`
 		} `json:"customer"`
 	}
@@ -393,8 +391,8 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		log.Printf("[ERROR] Error in parsing request body: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error parsing request body",
+			"error":   true,
+			"message": "Error parsing request body",
 		})
 	}
 
@@ -402,8 +400,8 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting shop",
+			"error":   true,
+			"message": "Error getting shop",
 		})
 	}
 
@@ -423,15 +421,15 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 		} else {
 			log.Printf("[ERROR] Error getting subscription: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": true,
-				"message":   "Error getting subscription",
+				"error":   true,
+				"message": "Error getting subscription",
 			})
 		}
 	} else {
 		log.Printf("[INFO] Subscription already exists")
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"error": false,
-			"message":   "Subscription already exists",
+			"error":   false,
+			"message": "Subscription already exists",
 		})
 	}
 
@@ -440,8 +438,8 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error in subscribing user to push: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error subscribing user to push",
+			"error":   true,
+			"message": "Error subscribing user to push",
 		})
 	} else {
 		customerCidStr := fmt.Sprint(req.Customer.Cid)
@@ -450,21 +448,21 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 			if err != nil {
 				log.Printf("[ERROR] Error appending customer id to subscription: %v", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": true,
-					"message":   "Error appending customer id to subscription",
+					"error":   true,
+					"message": "Error appending customer id to subscription",
 				})
 			}
-		}	
+		}
 	}
 
 	go func() {
 		// send push notification
 		err := util.SendPushNotification(
-			"Subscription successful!", 
+			"Subscription successful!",
 			"You're now subscribed to push notifications from "+shop.Name,
-			"https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png", // Make customizabe 
 			"https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png", // Make customizabe
-			"https://" + shop.ShopIdentifier, // Make customizabe
+			"https://raw.githubusercontent.com/zappush/zappush.github.io/master/og-image.png", // Make customizabe
+			"https://"+shop.ShopIdentifier,                                                    // Make customizabe
 			sub.ID,
 			models.NotificationCampaign{},
 		)
@@ -474,8 +472,8 @@ func HandlePublicSubscribeToPush(c *fiber.Ctx) error {
 	}()
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
-		"message":   "User subscribed to push notifications successfully",
+		"error":   false,
+		"message": "User subscribed to push notifications successfully",
 	})
 }
 
@@ -484,8 +482,8 @@ func HandleSubscribeToPush(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		log.Printf("[ERROR] Error in parsing request body: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error parsing request body",
+			"error":   true,
+			"message": "Error parsing request body",
 		})
 	}
 
@@ -499,14 +497,14 @@ func HandleSubscribeToPush(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error in subscribing user to push: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error subscribing user to push",
+			"error":   true,
+			"message": "Error subscribing user to push",
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
-		"message":   "User subscribed to push notifications successfully",
+		"error":   false,
+		"message": "User subscribed to push notifications successfully",
 	})
 }
 
@@ -523,16 +521,16 @@ func HandleGetNotificationConfigurations(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting shop",
+			"error":   true,
+			"message": "Error getting shop",
 		})
 	}
 
 	if shop.OwnerID != c.Locals("id").(string) {
 		log.Printf("[ERROR] Unauthorized access")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": true,
-			"message":   "Unauthorized access",
+			"error":   true,
+			"message": "Unauthorized access",
 		})
 	}
 
@@ -540,25 +538,24 @@ func HandleGetNotificationConfigurations(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting notification configuration: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting notification configuration",
+			"error":   true,
+			"message": "Error getting notification configuration",
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
+		"error":          false,
 		"configurations": notifConfigs,
 	})
 }
-
 
 func HandleSaveNotificationConfiguration(c *fiber.Ctx) error {
 	var req models.NotificationConfiguration
 	if err := c.BodyParser(&req); err != nil {
 		log.Printf("[ERROR] Error in parsing request body: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error parsing request body",
+			"error":   true,
+			"message": "Error parsing request body",
 		})
 	}
 
@@ -569,8 +566,8 @@ func HandleSaveNotificationConfiguration(c *fiber.Ctx) error {
 	if req.ShopID == "" {
 		log.Printf("[ERROR] Shop ID is required")
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Shop ID is required",
+			"error":   true,
+			"message": "Shop ID is required",
 		})
 	}
 
@@ -578,20 +575,20 @@ func HandleSaveNotificationConfiguration(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting shop",
+			"error":   true,
+			"message": "Error getting shop",
 		})
 	}
 
 	if shop.OwnerID != c.Locals("id").(string) {
 		log.Printf("[ERROR] Unauthorized access")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": true,
-			"message":   "Unauthorized access",
+			"error":   true,
+			"message": "Unauthorized access",
 		})
 	}
 
-	if (req.URL == "" || strings.HasPrefix(req.URL, "http://") || strings.HasPrefix(req.URL, "https://")) {
+	if req.URL == "" || strings.HasPrefix(req.URL, "http://") || strings.HasPrefix(req.URL, "https://") {
 		req.URL = "https://" + shop.ShopIdentifier
 	}
 
@@ -610,45 +607,45 @@ func HandleSaveNotificationConfiguration(c *fiber.Ctx) error {
 			if err != nil {
 				log.Printf("[ERROR] Error initializing GCP: %v", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": true,
-					"message":   "Internal server error",
+					"error":   true,
+					"message": "Internal server error",
 				})
 			}
 		}
 
 		// check if Icon and Badge are base64 encoded
 		if util.IsBase64Image(req.Icon) {
-			req.Icon, err = util.UploadImageToGCP(storage, bucketName, shop.ID + "_" + req.ID + "_icon", req.Icon)
+			req.Icon, err = util.UploadImageToGCP(storage, bucketName, shop.ID+"_"+req.ID+"_icon", req.Icon)
 			if err != nil {
 				log.Printf("[ERROR] Error uploading icon to GCP: %v", err)
 				if err.Error() == "image size exceeds 5 MB" {
 					return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-						"error": true,
-						"message":   "Image size exceeds 5 MB",
+						"error":   true,
+						"message": "Image size exceeds 5 MB",
 					})
 				}
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": true,
-					"message":   "Internal server error",
+					"error":   true,
+					"message": "Internal server error",
 				})
 			}
 		}
 
 		if util.IsBase64Image(req.Badge) {
-			req.Badge, err = util.UploadImageToGCP(storage, bucketName, shop.ID + "_" + req.ID + "_badge", req.Badge)
+			req.Badge, err = util.UploadImageToGCP(storage, bucketName, shop.ID+"_"+req.ID+"_badge", req.Badge)
 			if err != nil {
 				log.Printf("[ERROR] Error uploading badge to GCP: %v", err)
 				if err.Error() == "image size exceeds 5 MB" {
 					return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-						"error": true,
-						"message":   "Image size exceeds 5 MB",
+						"error":   true,
+						"message": "Image size exceeds 5 MB",
 					})
 				}
 
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": true,
-					"message":   "Error uploading badge to bucket -- is it a valid base64 image?",
+					"error":   true,
+					"message": "Error uploading badge to bucket -- is it a valid base64 image?",
 				})
 			}
 		}
@@ -659,21 +656,21 @@ func HandleSaveNotificationConfiguration(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error setting notification configuration: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error setting notification configuration",
+			"error":   true,
+			"message": "Error setting notification configuration",
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
+		"error":        false,
 		"notification": notConfig,
 	})
 }
 
 func HandleLaunchNotification(c *fiber.Ctx) error {
 	type LaunchNotificationRequest struct {
-		ShopId string `json:"shop_id"`
-		All bool `json:"all"`
+		ShopId                      string `json:"shop_id"`
+		All                         bool   `json:"all"`
 		NotificationConfigurationID string `json:"notification_configuration_id"`
 	}
 
@@ -681,16 +678,16 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		log.Printf("[ERROR] Error in parsing request body: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error parsing request body",
+			"error":   true,
+			"message": "Error parsing request body",
 		})
 	}
 
 	if req.ShopId == "" || req.NotificationConfigurationID == "" || !req.All {
 		log.Printf("[ERROR] Shop ID and Notification Configuration ID are required")
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Shop ID and Notification Configuration ID are required",
+			"error":   true,
+			"message": "Shop ID and Notification Configuration ID are required",
 		})
 	}
 
@@ -698,16 +695,16 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting shop",
+			"error":   true,
+			"message": "Error getting shop",
 		})
 	}
 
 	if shop.OwnerID != c.Locals("id").(string) {
 		log.Printf("[ERROR] Forbidden request")
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"error": true,
-			"message":   "Forbidden request",
+			"error":   true,
+			"message": "Forbidden request",
 		})
 	}
 
@@ -716,8 +713,8 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting subscriptions: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting subscriptions",
+			"error":   true,
+			"message": "Error getting subscriptions",
 		})
 	}
 
@@ -725,25 +722,25 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting notification configuration: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting notification configuration",
+			"error":   true,
+			"message": "Error getting notification configuration",
 		})
 	}
 
 	if len(subscriptions) == 0 {
 		log.Printf("[ERROR] No subscriptions found")
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"error": false,
-			"message":   "No subscriptions found",
+			"error":   false,
+			"message": "No subscriptions found",
 		})
 	}
 
 	// this, we will call a campaign
 	campaign := models.NotificationCampaign{
-		ShopID: shop.ID,
-		Shop: shop,
+		ShopID:                      shop.ID,
+		Shop:                        shop,
 		NotificationConfigurationID: config.ID,
-		NotificationConfiguration: config,
+		NotificationConfiguration:   config,
 	}
 
 	// save campaign
@@ -751,8 +748,8 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error setting notification campaign: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error setting notification campaign",
+			"error":   true,
+			"message": "Error setting notification campaign",
 		})
 	}
 
@@ -777,15 +774,14 @@ func HandleLaunchNotification(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
-		"message":   "Push notification sent successfully",
+		"error":   false,
+		"message": "Push notification sent successfully",
 	})
 }
 
-
 func HandleGetNotificationCampaigns(c *fiber.Ctx) error {
 	type GetNotificationCampaignsRequest struct {
-		ShopId string `json:"shop_id"`
+		ShopId                 string `json:"shop_id"`
 		NotificationCampaignID string `json:"notification_campaign_id"`
 	}
 
@@ -797,16 +793,16 @@ func HandleGetNotificationCampaigns(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting shop: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting shop",
+			"error":   true,
+			"message": "Error getting shop",
 		})
 	}
 
 	if shop.OwnerID != c.Locals("id").(string) {
 		log.Printf("[ERROR] Unauthorized access")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": true,
-			"message":   "Unauthorized access",
+			"error":   true,
+			"message": "Unauthorized access",
 		})
 	}
 
@@ -814,8 +810,8 @@ func HandleGetNotificationCampaigns(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("[ERROR] Error getting campaigns: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error getting campaigns",
+			"error":   true,
+			"message": "Error getting campaigns",
 		})
 	}
 
@@ -827,8 +823,8 @@ func HandleGetNotificationCampaigns(c *fiber.Ctx) error {
 	if req.NotificationCampaignID != "" {
 		if len(campaigns) == 0 {
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{
-				"error": false,
-				"message":   "No campaigns found",
+				"error":   false,
+				"message": "No campaigns found",
 			})
 		} else {
 			// get the notifications sent to this campaign
@@ -836,8 +832,8 @@ func HandleGetNotificationCampaigns(c *fiber.Ctx) error {
 			if err != nil {
 				log.Printf("[ERROR] Error getting notifications: %v", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": true,
-					"message":   "Error getting notifications",
+					"error":   true,
+					"message": "Error getting notifications",
 				})
 			}
 
@@ -850,24 +846,23 @@ func HandleGetNotificationCampaigns(c *fiber.Ctx) error {
 			}
 
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{
-				"error": false,
-				"campaign": campaigns[0],
+				"error":         false,
+				"campaign":      campaigns[0],
 				"notifications": notifications,
 			})
 		}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
+		"error":     false,
 		"campaigns": campaigns,
 	})
 }
 
-
 func HandlePushNotification(c *fiber.Ctx) error {
 	type PushNotificationRequest struct {
-		Test bool `json:"test"`
-		Body string `json:"body"`
+		Test  bool   `json:"test"`
+		Body  string `json:"body"`
 		Title string `json:"title"`
 	}
 
@@ -875,8 +870,8 @@ func HandlePushNotification(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		log.Printf("[ERROR] Error in parsing request body: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"message":   "Error parsing request body",
+			"error":   true,
+			"message": "Error parsing request body",
 		})
 	}
 
@@ -886,15 +881,15 @@ func HandlePushNotification(c *fiber.Ctx) error {
 		if err != nil {
 			log.Printf("[ERROR] Error getting subscriptions: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": true,
-				"message":   "Error getting subscriptions",
+				"error":   true,
+				"message": "Error getting subscriptions",
 			})
 		}
 
 		if len(subscriptions) == 0 {
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{
-				"error": false,
-				"message":   "No subscriptions found",
+				"error":   false,
+				"message": "No subscriptions found",
 			})
 		}
 
@@ -904,19 +899,19 @@ func HandlePushNotification(c *fiber.Ctx) error {
 			req.Body = "Test push notification"
 			req.Title = "Test push notification!"
 			// err := util.SendPushNotification(req.Title, req.Body, subscription.ID)
-			err := util.SendPushNotification(req.Title, req.Body, examplePic, examplePic,"http://localhost:3000", subscription.ID, models.NotificationCampaign{}) 
+			err := util.SendPushNotification(req.Title, req.Body, examplePic, examplePic, "http://localhost:3000", subscription.ID, models.NotificationCampaign{})
 			if err != nil {
 				log.Printf("[ERROR] Error in sending push notification: %v", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": true,
-					"message":   "Error sending push notification",
+					"error":   true,
+					"message": "Error sending push notification",
 				})
 			}
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"error": false,
-			"message":   "Push notification sent successfully",
+			"error":   false,
+			"message": "Push notification sent successfully",
 		})
 	}
 
@@ -931,9 +926,7 @@ func HandlePushNotification(c *fiber.Ctx) error {
 	// }
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error": false,
-		"message":   "Push notification sent successfully",
+		"error":   false,
+		"message": "Push notification sent successfully",
 	})
 }
-
-

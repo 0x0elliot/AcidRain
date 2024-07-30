@@ -2,6 +2,7 @@ package util
 
 import (
 	"encoding/base64"
+	"strings"
 )
 
 func Contains(arr []string, str string) bool {
@@ -44,3 +45,68 @@ func CalculateBase64ImageSizeMB(base64String string) (float64, error) {
 	return sizeInMB, nil
 }
 
+// user agent to device type
+func GetUserAgentDeviceType(userAgent string) string {
+	if userAgent == "" {
+		return "unknown"
+	}
+
+	if strings.Contains(userAgent, "Android") {
+		return "mobile"
+	}
+
+	if strings.Contains(userAgent, "iPhone") {
+		return "mobile"
+	}
+
+	if strings.Contains(userAgent, "iPad") {
+		return "tablet"
+	}
+
+	if strings.Contains(userAgent, "Macintosh") {
+		return "desktop"
+	}
+
+	if strings.Contains(userAgent, "Windows") {
+		return "desktop"
+	}
+
+	if strings.Contains(userAgent, "Linux") {
+		return "desktop"
+	}
+
+	return "unknown"
+}
+
+// User agent to OS
+func GetUserAgentOS(userAgent string) string {
+	if userAgent == "" {
+		return "unknown"
+	}
+
+	if strings.Contains(userAgent, "Android") {
+		return "Android"
+	}
+
+	if strings.Contains(userAgent, "iPhone") {
+		return "iOS"
+	}
+
+	if strings.Contains(userAgent, "iPad") {
+		return "iOS"
+	}
+
+	if strings.Contains(userAgent, "Macintosh") {
+		return "MacOS"
+	}
+
+	if strings.Contains(userAgent, "Windows") {
+		return "Windows"
+	}
+
+	if strings.Contains(userAgent, "Linux") {
+		return "Linux"
+	}
+
+	return "unknown"
+}

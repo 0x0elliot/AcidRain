@@ -4,6 +4,8 @@ import (
 	db "go-authentication-boilerplate/database"
 	models "go-authentication-boilerplate/models"
 	"log"
+	// "strings"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -143,7 +145,7 @@ func GetNotificationConfigurationsById(id string) ([]*models.NotificationConfigu
 		return notificationConfigurations, txn.Error
 	}
 	return notificationConfigurations, nil
-}	
+}
 
 func GetNotificationSentById(id string) (*models.NotificationsSent, error) {
 	notificationSent := new(models.NotificationsSent)
@@ -175,6 +177,27 @@ func GetShopFromShopIdentifier(shopIdentifier string) (*models.Shop, error) {
 	return shop, nil
 }
 
+func FetchClickStats(shopID string, startDate time.Time, endDate time.Time) ([]models.DailyClickStats, error) {
+    var results []models.DailyClickStats
+
+	err := db.DB.Table("tracked_clicks").
+		Select("to_char(tracked_clicks.created_at::date, 'YYYY-MM-DD') as date, "+
+			"COUNT(CASE WHEN tracked_clicks.click_device = 'desktop' THEN 1 END) as desktop, "+
+			"COUNT(CASE WHEN tracked_clicks.click_device = 'mobile' THEN 1 END) as mobile").
+		Joins("JOIN notification_campaigns ON tracked_clicks.notification_campaign_id = notification_campaigns.id").
+		Where("DATE(tracked_clicks.created_at) BETWEEN ? AND ?", startDate.Format("2006-01-02"), endDate.Format("2006-01-02")).
+		Group("to_char(tracked_clicks.created_at::date, 'YYYY-MM-DD')").
+		Order("to_char(tracked_clicks.created_at::date, 'YYYY-MM-DD')").
+		Scan(&results).Error
+
+	if err != nil {
+		log.Printf("[ERROR] Error fetching click stats: %v", err)
+		return nil, err
+	}
+
+	return results, nil
+}
+
 func GetNotificationsSentByCampaignId(campaignId string) ([]models.NotificationsSent, error) {
 	notificationsSent := []models.NotificationsSent{}
 	txn := db.DB.Where("notification_campaign_id = ?", campaignId).Preload("NotificationCampaign").Find(&notificationsSent)
@@ -201,7 +224,7 @@ func GetNotificationCampaignsByShopId(shopId string, notification_campaign_id st
 	return notificationCampaigns, nil
 }
 
-func GetStoreNotifications(shopId, notificationType string) ([]models.Notification, error) {	
+func GetStoreNotifications(shopId, notificationType string) ([]models.Notification, error) {
 	notifications := []models.Notification{}
 	query := db.DB.Where("shop_id = ? AND notification_type = ?", shopId, notificationType)
 
@@ -271,7 +294,7 @@ func GetTrackedUserByFingerprint(fingerprint string) (*models.TrackedUser, error
 	return trackedUser, nil
 }
 
-func AppendCustomerIDToSubscription(subscription *models.NotificationSubscription, customerID string) (error) {
+func AppendCustomerIDToSubscription(subscription *models.NotificationSubscription, customerID string) error {
 	// remember, subscription.CustomerIDs is a pg.Int64Array
 	return db.DB.Model(
 		&subscription,
@@ -384,7 +407,7 @@ func SetNotificationSent(notificationSent *models.NotificationsSent) (models.Not
 			log.Printf("[ERROR] Error creating notification sent: %v", txn.Error)
 			return *notificationSent, txn.Error
 		}
-	} 
+	}
 
 	notificationSent.UpdatedAt = db.DB.NowFunc().String()
 	txn := db.DB.Omit("NotificationCampaign").Save(notificationSent)
@@ -430,4 +453,3 @@ func DeleteNotification(notification *models.Notification) error {
 	log.Printf("[INFO] Rows affected: %d", txn.RowsAffected)
 	return nil
 }
-

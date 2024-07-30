@@ -3,8 +3,11 @@ package router
 import (
 	models "go-authentication-boilerplate/models"
 	util "go-authentication-boilerplate/util"
+	auth "go-authentication-boilerplate/auth"
 
+	"strings"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -13,7 +16,72 @@ func SetupTrackingRoutes() {
 	// set up
 	// TRACKING.Post("/sync", HandleTrackedUserSync)
 	TRACKING.Get("/redirect/click", HandleTrackClick)
+
+	privTracking := TRACKING.Group("/private")
+	privTracking.Use(auth.SecureAuth()) // middleware to secure all routes for this group
+	privTracking.Get("/stats/devices", HandleGetCampaignStatistics)
 }
+
+func HandleGetCampaignStatistics(c *fiber.Ctx) error {
+	shopID := c.Query("shop_id")
+
+	if shopID == "" {
+		log.Printf("[ERROR] Shop ID is required")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": "Shop ID is required",
+		})
+	}
+
+	shop, err := util.GetShopById(shopID)
+	if err != nil {
+		log.Printf("[ERROR] Error getting shop: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": "Error getting shop",
+		})
+	}
+
+	if shop.OwnerID != c.Locals("id").(string) {
+		log.Printf("[ERROR] Shop does not belong to user")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error":   true,
+			"message": "Shop does not belong to user",
+		})
+	}
+
+	if c.Query("start") == "" || c.Query("end") == "" {
+		log.Printf("[ERROR] Start and End dates not given. Defaulting to 1st April 2024 to 4th April 2024")
+	}
+
+	startDate := time.Date(2024, 7, 1, 0, 0, 0, 0, time.UTC)
+	endDate := time.Date(2024, 8, 4, 23, 59, 59, 999999999, time.UTC)
+
+	stats, err := util.FetchClickStats(
+		c.Query("shop_id"),
+		startDate,
+		endDate,
+	)
+
+	if err != nil {
+		log.Printf("[ERROR] Error fetching stats: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   true,
+			"message": "Error fetching stats",
+		})
+	}
+
+	// Use the stats data as needed
+	// for _, stat := range stats {
+	// 	fmt.Printf("Date: %s, Desktop: %d, Mobile: %d\n", stat.Date.Format("2006-01-02"), stat.Desktop, stat.Mobile)
+	// }
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"stats": stats,
+	})
+}
+
 
 func HandleTrackClick(c *fiber.Ctx) error {
 	// this is just a forward function. it is supposed
@@ -44,8 +112,13 @@ func HandleTrackClick(c *fiber.Ctx) error {
 	click.ClickIP = c.IP()
 	click.ClickForwardURL = notificationCampaign.NotificationConfiguration.URL
 	click.ClickReferrer = c.Get("Referer")
-	click.ClickUserAgent = c.Get("User-Agent")
-	click.ClickOS = c.Get("OS")
+
+	userAgent := c.Get("User-Agent")
+	click.ClickUserAgent = userAgent
+
+	// guess the device from the user agent
+	click.ClickOS = strings.ToLower(util.GetUserAgentDeviceType(userAgent))
+	click.ClickDevice = strings.ToLower(util.GetUserAgentDeviceType(userAgent))
 
 	_, err = util.SetTrackedClick(click)
 	if err != nil {
