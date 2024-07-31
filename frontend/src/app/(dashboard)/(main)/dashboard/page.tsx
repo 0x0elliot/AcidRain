@@ -51,6 +51,10 @@ export default function Dashboard() {
     }).then((response) => {
       localStorage.setItem('userinfo', JSON.stringify(response.data));
       setUserinfo(response.data);
+    }).catch((error) => {
+      if (error.response.status === 401) {
+        window.location.href = '/logout';
+      }
     });
 
     fetch(`${siteConfig.baseApiUrl}/api/shop/private/all`, {
