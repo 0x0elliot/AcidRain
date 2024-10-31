@@ -1,3 +1,20 @@
+# Try it out
+
+```
+# Run databaase + cache
+docker compose up
+
+# Run backend
+cd backend
+go mod tidy
+go run main.go
+
+# Run frontend
+cd frontend
+yarn install
+yarn start
+```
+
 # TO do
 - [ ] Send "campaign" notification on the fly
 - [ ] SMS abandoned cart automation
